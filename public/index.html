@@ -1,0 +1,1496 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Korabi Travel — find your flight</title>
+<meta name="description" content="Search live flights, earn Korabi Cash, and book in minutes. Powered by Duffel." />
+<meta name="theme-color" content="#FFF7EE" />
+<meta property="og:type" content="website" />
+<meta property="og:site_name" content="Korabi Travel" />
+<meta property="og:title" content="Korabi Travel — find your flight" />
+<meta property="og:description" content="Search live flights, earn Korabi Cash, and book in minutes. Powered by Duffel." />
+<meta property="og:url" content="/" />
+<meta property="og:locale" content="en_US" />
+<meta name="twitter:card" content="summary" />
+<meta name="twitter:title" content="Korabi Travel — find your flight" />
+<meta name="twitter:description" content="Search live flights, earn Korabi Cash, and book in minutes." />
+<link rel="icon" href="/assets/korabi-mark.svg">
+<link rel="stylesheet" href="/assets/korabi.css">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700;12..96,800&family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --paper:#FFF7EE;--paper-2:#FFEFDF;--ink:#2A2018;--ink-soft:#6B5D4F;
+    --coral:#FF6A4D;--coral-deep:#E4502F;--teal:#0F827E;--teal-deep:#0B615E;
+    --sun:#FFC44D;--sky:#BFE3E0;--line:#E7D8C5;--card:#FFFDFA;--shadow:rgba(42,32,24,.12);
+    --display:"Bricolage Grotesque",ui-sans-serif,system-ui,sans-serif;
+    --body:"DM Sans",ui-sans-serif,system-ui,sans-serif;
+    --mono:"DM Mono",ui-monospace,"Courier New",monospace;
+    --r:18px;--maxw:1140px;
+  }
+  *{box-sizing:border-box;}
+  html{scroll-behavior:smooth;}
+  body{margin:0;font-family:var(--body);color:var(--ink);background:var(--paper);line-height:1.55;-webkit-font-smoothing:antialiased;overflow-x:hidden;}
+  a{color:inherit;text-decoration:none;}
+  button{font-family:inherit;cursor:pointer;border:none;background:none;}
+  .wrap{max-width:var(--maxw);margin:0 auto;padding:0 24px;}
+  .eyebrow{font-family:var(--mono);font-size:.72rem;letter-spacing:.14em;text-transform:uppercase;color:var(--coral-deep);margin:0 0 14px;display:inline-flex;align-items:center;gap:10px;}
+  .eyebrow::before{content:"";width:26px;height:2px;background:var(--coral);border-radius:2px;}
+  h1,h2,h3{font-family:var(--display);font-weight:800;line-height:1.05;letter-spacing:-.02em;margin:0;}
+  h2{font-size:clamp(1.9rem,4.4vw,3rem);}
+  p{margin:0 0 1rem;}
+  :focus-visible{outline:3px solid var(--teal);outline-offset:3px;border-radius:6px;}
+
+  .btn{display:inline-flex;align-items:center;justify-content:center;gap:9px;font-weight:600;font-size:.98rem;padding:13px 22px;border-radius:999px;transition:transform .15s,box-shadow .15s,background .15s;white-space:nowrap;}
+  .btn-primary{background:var(--coral);color:#fff;box-shadow:0 8px 20px -8px var(--coral-deep);}
+  .btn-primary:hover{background:var(--coral-deep);transform:translateY(-2px);}
+  .btn-ink{background:var(--ink);color:var(--paper);}
+  .btn-ink:hover{transform:translateY(-2px);}
+  .btn-ghost{background:transparent;border:1.5px solid var(--ink);color:var(--ink);}
+  .btn-ghost:hover{background:var(--ink);color:var(--paper);transform:translateY(-2px);}
+  .btn[disabled]{opacity:.55;cursor:not-allowed;transform:none;}
+
+  /* nav */
+  header.nav{position:sticky;top:0;z-index:50;background:rgba(255,247,238,.86);backdrop-filter:blur(10px);border-bottom:1px solid var(--line);}
+  .nav-inner{display:flex;align-items:center;justify-content:space-between;height:68px;}
+  .brand{display:flex;align-items:center;gap:9px;font-family:var(--display);font-weight:800;font-size:1.45rem;letter-spacing:-.03em;}
+  .brand .mark{width:38px;height:38px;flex:none;display:block;border-radius:11px;box-shadow:0 4px 10px -4px var(--shadow);transition:transform .3s ease;}
+  .brand:hover .mark{transform:rotate(-6deg) translateY(-1px);}
+  .brand .mark .flag{transform-box:fill-box;transform-origin:bottom left;animation:flagwave 3.5s ease-in-out infinite;}
+  @keyframes flagwave{0%,100%{transform:skewX(0deg) scaleX(1)}50%{transform:skewX(-10deg) scaleX(.9)}}
+  /* topographic contour texture (hero) */
+  .topo{position:absolute;inset:0;width:100%;height:100%;z-index:0;pointer-events:none;overflow:hidden;}
+  .topo svg{position:absolute;inset:0;width:100%;height:100%;}
+  .topo path{fill:none;stroke:var(--teal);stroke-width:1.5;opacity:.09;}
+  .topo .c0{opacity:.16;}
+  /* mountain ridgeline cresting into the footer */
+  .ridge{display:block;width:100%;height:62px;margin-top:70px;margin-bottom:-2px;}
+  .ridge path{fill:var(--ink);}
+  nav.links{display:flex;align-items:center;gap:28px;}
+  nav.links a{font-size:.95rem;font-weight:500;color:var(--ink-soft);}
+  nav.links a:hover{color:var(--ink);}
+  .nav-cta{display:flex;align-items:center;gap:14px;}
+  .auth-slot{display:flex;align-items:center;gap:12px;}
+  .auth-slot a{font-size:.9rem;font-weight:500;color:var(--ink-soft);}
+  .auth-slot a:hover{color:var(--ink);}
+  @media (max-width:760px){ .auth-slot .muted, .auth-slot a[href="/account"], .auth-slot a[href="/admin"]{display:none;} }
+  .menu-btn{display:none;width:42px;height:42px;border-radius:12px;border:1.5px solid var(--line);align-items:center;justify-content:center;font-size:1.3rem;}
+  .mode-pill{font-family:var(--mono);font-size:.66rem;letter-spacing:.08em;text-transform:uppercase;padding:5px 11px;border-radius:999px;border:1.5px solid var(--line);color:var(--ink-soft);}
+  .mode-pill.live{background:var(--teal);color:#fff;border-color:var(--teal);}
+  .mode-pill.demo{background:var(--sun);color:var(--ink);border-color:var(--sun);}
+
+  /* hero */
+  .hero{position:relative;padding:54px 0 26px;overflow:hidden;}
+  .hero .wrap{position:relative;z-index:1;}
+  .hero h1{font-size:clamp(2.4rem,5.6vw,3.8rem);max-width:16ch;}
+  .hero h1 .swash{color:var(--coral);font-style:italic;}
+  .hero .lede{font-size:1.12rem;color:var(--ink-soft);max-width:42ch;margin-top:16px;}
+  .blob{position:absolute;border-radius:50%;filter:blur(2px);z-index:0;opacity:.5;}
+  .blob.s{width:120px;height:120px;background:var(--sky);top:-30px;right:8%;}
+  .blob.y{width:90px;height:90px;background:var(--sun);bottom:14%;left:-30px;opacity:.45;}
+
+  /* search */
+  .searchcard{background:var(--card);border:1px solid var(--line);border-radius:24px;box-shadow:0 24px 50px -28px var(--shadow);padding:16px;margin-top:30px;position:relative;z-index:20;}
+  .triptype{display:flex;gap:6px;margin-bottom:12px;}
+  .triptype button{font-size:.84rem;font-weight:600;padding:7px 15px;border-radius:999px;color:var(--ink-soft);}
+  .triptype button[aria-pressed="true"]{background:var(--ink);color:var(--paper);}
+  .searchrow{display:grid;grid-template-columns:1.2fr auto 1.2fr 1fr 1fr 1.1fr auto;gap:8px;align-items:stretch;}
+  .result-meta{font-family:var(--mono);font-size:.78rem;color:var(--ink-soft);margin-top:6px;}
+  @media (max-width:900px){ .searchrow{grid-template-columns:1fr;} }
+  .fld{position:relative;display:flex;flex-direction:column;gap:2px;padding:11px 15px;border-radius:15px;border:1px solid transparent;transition:border-color .15s,background .15s;background:var(--paper);}
+  .fld:focus-within{border-color:var(--coral);background:#fff;}
+  .fld label{font-family:var(--mono);font-size:.62rem;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-soft);}
+  .fld input,.fld select{border:none;background:transparent;font-family:var(--body);font-size:1rem;font-weight:500;color:var(--ink);padding:2px 0;width:100%;}
+  .fld input:focus,.fld select:focus{outline:none;}
+  .fld input::placeholder{color:#B7A793;}
+  .fld.disabled{opacity:.5;pointer-events:none;}
+  .go button{height:100%;width:100%;}
+
+  /* autocomplete dropdown */
+  .ac{position:absolute;top:calc(100% + 6px);left:0;right:0;background:#fff;border:1px solid var(--line);border-radius:14px;box-shadow:0 18px 40px -18px var(--shadow);z-index:40;overflow:hidden;display:none;}
+  .ac.open{display:block;}
+  .ac button{display:flex;align-items:center;gap:12px;width:100%;text-align:left;padding:11px 15px;border-bottom:1px solid var(--paper-2);}
+  .ac button:last-child{border-bottom:none;}
+  .ac button:hover,.ac button.active{background:var(--paper-2);}
+  .ac .code{font-family:var(--mono);font-weight:500;font-size:.82rem;background:var(--ink);color:var(--paper);padding:3px 7px;border-radius:6px;flex:none;}
+  .ac .nm{font-size:.92rem;font-weight:500;line-height:1.2;}
+  .ac .sub{font-size:.78rem;color:var(--ink-soft);}
+
+  /* travelers popover */
+  .pax-pop{position:absolute;top:calc(100% + 6px);right:0;width:280px;background:#fff;border:1px solid var(--line);border-radius:16px;box-shadow:0 18px 40px -18px var(--shadow);padding:16px;z-index:40;display:none;}
+  .pax-pop.open{display:block;}
+  .pax-row{display:flex;align-items:center;justify-content:space-between;padding:9px 0;}
+  .pax-row b{font-size:.95rem;}
+  .pax-row span{font-size:.78rem;color:var(--ink-soft);}
+  .stepper{display:flex;align-items:center;gap:12px;}
+  .stepper button{width:30px;height:30px;border-radius:50%;border:1.5px solid var(--line);font-size:1.1rem;line-height:1;color:var(--ink);display:flex;align-items:center;justify-content:center;}
+  .stepper button:hover{border-color:var(--coral);}
+  .stepper output{font-family:var(--mono);min-width:18px;text-align:center;}
+  .child-ages{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px;}
+  .child-ages select{font-family:var(--mono);font-size:.78rem;border:1px solid var(--line);border-radius:8px;padding:5px 6px;background:var(--paper);}
+
+  /* banner */
+  .banner{display:none;align-items:center;gap:10px;margin-top:14px;font-size:.86rem;background:#FFF4D6;border:1px solid var(--sun);color:#7a5a10;padding:10px 16px;border-radius:12px;}
+  .banner.show{display:flex;}
+  .banner code{font-family:var(--mono);background:rgba(0,0,0,.06);padding:1px 6px;border-radius:5px;}
+
+  /* sections */
+  section{padding:70px 0;}
+  .sec-head{max-width:640px;margin-bottom:30px;}
+  .sec-head p{color:var(--ink-soft);font-size:1.06rem;margin-top:12px;}
+
+  /* results */
+  #results{padding-top:30px;}
+  .results-top{display:flex;justify-content:space-between;align-items:flex-end;gap:16px;flex-wrap:wrap;margin-bottom:22px;}
+  .results-top .sort{display:flex;gap:6px;align-items:center;font-size:.85rem;color:var(--ink-soft);}
+  .results-top .sort button{font-size:.82rem;font-weight:600;padding:6px 13px;border-radius:999px;border:1.5px solid var(--line);color:var(--ink-soft);}
+  .results-top .sort button[aria-pressed="true"]{background:var(--ink);color:var(--paper);border-color:var(--ink);}
+  .offers{display:flex;flex-direction:column;gap:16px;}
+
+  .offer{background:var(--card);border:1px solid var(--line);border-radius:var(--r);padding:20px 22px;display:grid;grid-template-columns:1fr auto;gap:20px;align-items:center;transition:transform .18s,box-shadow .18s;}
+  .offer:hover{transform:translateY(-3px);box-shadow:0 22px 40px -26px var(--shadow);}
+  .offer .airline{display:flex;align-items:center;gap:12px;margin-bottom:14px;}
+  .offer .airline .logo{width:34px;height:34px;border-radius:9px;background:var(--paper-2);display:flex;align-items:center;justify-content:center;font-family:var(--mono);font-size:.72rem;font-weight:500;overflow:hidden;flex:none;}
+  .offer .airline .logo img{width:100%;height:100%;object-fit:contain;}
+  .offer .airline b{font-size:.98rem;}
+  .offer .airline .cabin{font-family:var(--mono);font-size:.64rem;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-soft);border:1px solid var(--line);padding:2px 8px;border-radius:999px;}
+  .leg{display:flex;align-items:center;gap:16px;padding:8px 0;}
+  .leg+.leg{border-top:1px dashed var(--line);}
+  .leg .time{font-family:var(--display);font-weight:700;font-size:1.18rem;line-height:1;}
+  .leg .ap{font-family:var(--mono);font-size:.74rem;color:var(--ink-soft);margin-top:3px;}
+  .leg .path{flex:1;text-align:center;position:relative;color:var(--ink-soft);font-size:.74rem;}
+  .leg .path .bar{height:2px;background:repeating-linear-gradient(90deg,var(--line) 0 6px,transparent 6px 11px);margin:6px 0;position:relative;}
+  .leg .path .bar::after{content:"✈";position:absolute;right:-2px;top:-9px;font-size:.8rem;color:var(--coral);}
+  .leg .dur{font-family:var(--mono);font-size:.72rem;}
+  .leg .stops{font-size:.72rem;color:var(--teal-deep);font-weight:600;}
+  .leg .stops.nonstop{color:var(--teal);}
+  .offer .price{text-align:right;display:flex;flex-direction:column;align-items:flex-end;gap:8px;border-left:1px dashed var(--line);padding-left:22px;}
+  .offer .price small{font-family:var(--mono);font-size:.62rem;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-soft);}
+  .offer .price strong{font-family:var(--display);font-size:1.7rem;font-weight:800;line-height:1;}
+
+  /* skeleton */
+  .sk{background:var(--card);border:1px solid var(--line);border-radius:var(--r);padding:22px;display:grid;grid-template-columns:1fr 120px;gap:20px;}
+  .sk .ln{height:14px;border-radius:7px;background:linear-gradient(90deg,var(--paper-2) 25%,#F3E7D6 37%,var(--paper-2) 63%);background-size:400% 100%;animation:shimmer 1.4s infinite;margin-bottom:12px;}
+  @keyframes shimmer{0%{background-position:100% 0}100%{background-position:-100% 0}}
+
+  .empty{text-align:center;color:var(--ink-soft);padding:50px 20px;display:none;}
+  .empty.show{display:block;}
+
+  /* curated strip */
+  .insp{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;}
+  .insp button{background:var(--card);border:1px solid var(--line);border-radius:14px;overflow:hidden;text-align:left;transition:transform .18s,box-shadow .18s;}
+  .insp button:hover{transform:translateY(-4px);box-shadow:0 18px 32px -22px var(--shadow);}
+  .insp .ph{height:96px;}
+  .insp .bd{padding:12px 14px;}
+  .insp .rt{font-family:var(--mono);font-size:.74rem;color:var(--ink-soft);}
+  .insp .pl{font-family:var(--display);font-weight:700;font-size:1.05rem;margin-top:2px;}
+
+  /* how / included / footer reuse */
+  .how{background:var(--ink);color:var(--paper);border-radius:34px;margin:0 24px;}
+  .how .eyebrow{color:var(--sun);}.how .eyebrow::before{background:var(--sun);}
+  .how h2{color:var(--paper);}
+  .steps{display:grid;grid-template-columns:repeat(3,1fr);gap:30px;margin-top:42px;}
+  .step .num{font-family:var(--mono);font-size:.86rem;color:var(--sun);border:1.5px solid rgba(255,255,255,.25);width:46px;height:46px;border-radius:50%;display:flex;align-items:center;justify-content:center;margin-bottom:18px;}
+  .step h3{font-size:1.35rem;color:var(--paper);margin-bottom:8px;}
+  .step p{color:#C9BCAE;margin:0;}
+  footer{background:var(--ink);color:var(--paper);padding:60px 0 28px;margin-top:0;}
+  .foot-grid{display:grid;grid-template-columns:1.4fr 1fr 1fr 1fr;gap:32px;}
+  footer .brand{color:var(--paper);}
+  footer .lede{color:#C9BCAE;font-size:.95rem;margin-top:14px;max-width:34ch;}
+  footer .col h4{font-family:var(--mono);font-size:.72rem;letter-spacing:.12em;text-transform:uppercase;color:var(--sun);margin:0 0 16px;}
+  footer .col a{display:block;color:#C9BCAE;font-size:.94rem;margin-bottom:11px;}
+  footer .col a:hover{color:var(--paper);}
+  .foot-bottom{display:flex;justify-content:space-between;border-top:1px solid rgba(255,255,255,.12);margin-top:40px;padding-top:22px;flex-wrap:wrap;gap:10px;color:#8C7E70;font-size:.84rem;}
+
+  /* modal */
+  .modal-bg{position:fixed;inset:0;background:rgba(42,32,24,.55);backdrop-filter:blur(3px);z-index:200;display:none;align-items:flex-start;justify-content:center;padding:32px 16px;overflow-y:auto;}
+  .modal-bg.open{display:flex;}
+  .modal{background:var(--paper);border-radius:24px;max-width:620px;width:100%;box-shadow:0 30px 70px -20px rgba(0,0,0,.4);overflow:hidden;margin:auto;}
+  .modal header{display:flex;justify-content:space-between;align-items:center;padding:20px 24px;border-bottom:1px solid var(--line);}
+  .modal header h3{font-size:1.3rem;}
+  .modal .x{font-size:1.4rem;width:38px;height:38px;border-radius:10px;color:var(--ink-soft);}
+  .modal .x:hover{background:var(--paper-2);}
+  .modal-body{padding:24px;}
+  .summary{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:16px;margin-bottom:20px;display:flex;justify-content:space-between;align-items:center;}
+  .summary .rt{font-family:var(--display);font-weight:700;font-size:1.1rem;}
+  .summary .mt{font-family:var(--mono);font-size:.78rem;color:var(--ink-soft);}
+  .summary .pr{font-family:var(--display);font-weight:800;font-size:1.4rem;}
+  .recheck{display:flex;flex-wrap:wrap;gap:8px 16px;font-size:.84rem;color:var(--ink-soft);margin:-8px 0 18px;min-height:18px;}
+  .recheck .ok{color:var(--teal-deep);font-weight:600;}
+  .recheck .changed{color:var(--coral-deep);font-weight:600;}
+  .recheck .spin{display:inline-block;animation:spin 1s linear infinite;}
+  @keyframes spin{to{transform:rotate(360deg);}}
+  .extras{margin:8px 0 2px;display:flex;flex-direction:column;gap:10px;}
+  .extras .sec-label{font-family:var(--mono);font-size:.64rem;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-soft);margin:4px 0 0;}
+  .addon{display:flex;gap:12px;align-items:center;border:1px solid var(--line);border-radius:14px;padding:13px 14px;background:var(--card);cursor:pointer;transition:border-color .15s,background .15s;}
+  .addon:hover{border-color:var(--teal);}
+  .addon.on{border-color:var(--teal);background:#F1FAF8;}
+  .addon .ic{width:38px;height:38px;border-radius:11px;background:var(--sky);display:flex;align-items:center;justify-content:center;font-size:1.15rem;flex:none;}
+  .addon .meta{flex:1;}
+  .addon .meta b{display:block;font-size:.96rem;}
+  .addon .meta span{font-size:.8rem;color:var(--ink-soft);}
+  .addon .price{font-family:var(--mono);font-weight:500;font-size:.86rem;color:var(--teal-deep);white-space:nowrap;}
+  .addon .check{width:22px;height:22px;border-radius:7px;border:2px solid var(--line);flex:none;display:flex;align-items:center;justify-content:center;font-size:.78rem;color:#fff;}
+  .addon.on .check{background:var(--teal);border-color:var(--teal);}
+  .addon.note{cursor:default;background:var(--paper-2);border-style:dashed;opacity:.85;}
+  .addon.note:hover{border-color:var(--line);}
+  .breakdown{margin-top:14px;font-size:.9rem;}
+  .breakdown .row{display:flex;justify-content:space-between;padding:3px 0;color:var(--ink-soft);}
+  .breakdown .row.total{color:var(--ink);font-weight:700;font-family:var(--display);font-size:1.12rem;border-top:1px solid var(--line);margin-top:6px;padding-top:8px;}
+  .breakdown .row .mono{font-family:var(--mono);}
+  .duffel-anc-mount{margin-top:10px;display:block;}
+  .pax-form{display:flex;flex-direction:column;gap:18px;}
+  .pax-block{border:1px solid var(--line);border-radius:14px;padding:16px;background:var(--card);}
+  .pax-block h4{font-family:var(--display);font-size:1rem;margin:0 0 12px;}
+  .grid2{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+  .inp{display:flex;flex-direction:column;gap:3px;margin-bottom:2px;}
+  .inp label{font-family:var(--mono);font-size:.62rem;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-soft);}
+  .inp input,.inp select{border:1px solid var(--line);border-radius:10px;padding:9px 11px;font-family:var(--body);font-size:.92rem;background:var(--paper);}
+  .inp input:focus,.inp select:focus{outline:none;border-color:var(--coral);}
+  .legal{font-size:.78rem;color:var(--ink-soft);margin:4px 0 16px;}
+  .confirm{text-align:center;padding:14px 0;}
+  .confirm .tick{width:64px;height:64px;border-radius:50%;background:var(--teal);color:#fff;font-size:2rem;display:flex;align-items:center;justify-content:center;margin:0 auto 16px;}
+  .confirm .ref{font-family:var(--mono);font-size:1.4rem;background:var(--ink);color:var(--paper);display:inline-block;padding:8px 18px;border-radius:10px;margin:8px 0 4px;letter-spacing:.05em;}
+
+  .toast{position:fixed;left:50%;bottom:28px;transform:translate(-50%,140%);background:var(--ink);color:var(--paper);padding:14px 22px;border-radius:999px;font-size:.95rem;box-shadow:0 18px 40px -16px var(--shadow);z-index:300;transition:transform .35s cubic-bezier(.2,.9,.3,1.3);display:flex;gap:10px;align-items:center;}
+  .toast.show{transform:translate(-50%,0);}
+
+  @media (max-width:980px){
+    .searchrow{grid-template-columns:1fr 1fr;}
+    .go{grid-column:1/-1;}
+    .insp{grid-template-columns:1fr 1fr;}
+  }
+  @media (max-width:900px){
+    nav.links{display:none;}.menu-btn{display:flex;}
+    .mobile-menu{display:none;flex-direction:column;padding:8px 24px 18px;border-bottom:1px solid var(--line);background:var(--paper);}
+    .mobile-menu.open{display:flex;}
+    .mobile-menu a{padding:11px 4px;font-weight:500;border-bottom:1px solid var(--line);}
+    .steps{grid-template-columns:1fr;}
+    .foot-grid{grid-template-columns:1fr 1fr;}
+    .offer{grid-template-columns:1fr;}
+    .offer .price{border-left:none;border-top:1px dashed var(--line);padding-left:0;padding-top:14px;flex-direction:row;justify-content:space-between;align-items:center;width:100%;}
+  }
+  @media (max-width:560px){
+    .searchrow{grid-template-columns:1fr;}
+    .insp{grid-template-columns:1fr;}
+    .foot-grid{grid-template-columns:1fr;}
+    .grid2{grid-template-columns:1fr;}
+    section{padding:52px 0;}
+  }
+  /* merchandising / smart pitching */
+  .badges{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:10px;}
+  .badge{font-family:var(--mono);font-size:.6rem;letter-spacing:.05em;text-transform:uppercase;font-weight:600;padding:3px 9px;border-radius:999px;border:1px solid transparent;}
+  .badge.cheapest{background:#E7F6F2;color:var(--teal-deep);border-color:#BFE3E0;}
+  .badge.best{background:#FFF1D6;color:#7a5a10;border-color:var(--sun);}
+  .badge.fastest{background:#EAF0FF;color:#2f4bb0;border-color:#cdd9ff;}
+  .badge.nonstop{background:#FBE9E4;color:var(--coral-deep);border-color:#f5c9bd;}
+  .badge.net{background:var(--ink);color:var(--paper);}
+  .merch-line{font-size:.78rem;margin-top:6px;line-height:1.4;}
+  .merch-line .member{color:var(--teal-deep);font-weight:600;}
+  .merch-line .earn{color:var(--ink-soft);}
+  .merch-line a{color:var(--coral-deep);font-weight:600;}
+  .hold{display:inline-flex;align-items:center;gap:5px;font-family:var(--mono);font-size:.68rem;color:var(--coral-deep);margin-top:6px;}
+  .hold::before{content:"";width:6px;height:6px;border-radius:50%;background:var(--coral);animation:pulse 1.6s infinite;}
+  @keyframes pulse{0%,100%{opacity:1;}50%{opacity:.3;}}
+  .rewards-strip{display:flex;align-items:center;gap:14px;flex-wrap:wrap;background:linear-gradient(100deg,#FFF1D6,#E7F6F2);border:1px solid var(--line);border-radius:16px;padding:14px 18px;margin-bottom:18px;font-size:.9rem;}
+  .rewards-strip b{font-family:var(--display);}
+  .rewards-strip .spacer{flex:1;}
+  /* planner agent */
+  .offer{position:relative;}
+  .offer.pick{border-color:var(--sun);box-shadow:0 0 0 2px var(--sun);}
+  .offer .pick-badge{position:absolute;left:16px;top:-11px;background:var(--sun);color:var(--ink);font-family:var(--mono);font-size:.6rem;letter-spacing:.06em;text-transform:uppercase;padding:3px 9px;border-radius:999px;font-weight:600;z-index:3;}
+  .addon.suggested{border-color:var(--sun);box-shadow:0 0 0 2px rgba(255,196,77,.45);}
+  .agent-fab{position:fixed;right:22px;bottom:22px;z-index:160;display:flex;align-items:center;gap:8px;background:var(--ink);color:var(--paper);padding:13px 18px;border-radius:999px;box-shadow:0 14px 30px -12px var(--shadow);font-weight:600;font-size:.94rem;transition:transform .15s;}
+  .agent-fab:hover{transform:translateY(-2px);}
+  .agent-fab .spark{color:var(--sun);font-size:1.05rem;}
+  .agent-panel{position:fixed;right:22px;bottom:22px;z-index:170;width:360px;max-width:calc(100vw - 32px);height:540px;max-height:calc(100vh - 40px);background:var(--paper);border:1px solid var(--line);border-radius:22px;box-shadow:0 30px 70px -20px rgba(0,0,0,.4);display:none;flex-direction:column;overflow:hidden;}
+  .agent-panel.open{display:flex;}
+  .agent-head{display:flex;align-items:center;gap:10px;padding:13px 15px;border-bottom:1px solid var(--line);background:var(--card);}
+  .agent-head .mk{width:30px;height:30px;border-radius:9px;flex:none;}
+  .agent-head b{font-family:var(--display);font-size:1rem;}
+  .agent-head .st{font-family:var(--mono);font-size:.58rem;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-soft);}
+  .agent-head .x{margin-left:auto;font-size:1.15rem;width:34px;height:34px;border-radius:9px;color:var(--ink-soft);}
+  .agent-head .x:hover{background:var(--paper-2);}
+  .agent-log{flex:1;overflow-y:auto;padding:16px;display:flex;flex-direction:column;gap:10px;}
+  .msg{max-width:86%;padding:10px 13px;border-radius:14px;font-size:.9rem;line-height:1.45;}
+  .msg.bot{background:var(--card);border:1px solid var(--line);align-self:flex-start;border-bottom-left-radius:4px;}
+  .msg.user{background:var(--ink);color:var(--paper);align-self:flex-end;border-bottom-right-radius:4px;}
+  .msg.tip{background:#F1FAF8;border:1px solid var(--teal);color:var(--teal-deep);align-self:flex-start;font-size:.86rem;}
+  .agent-typing{align-self:flex-start;color:var(--ink-soft);font-size:.85rem;}
+  .agent-chips{display:flex;flex-wrap:wrap;gap:6px;padding:0 12px 10px;background:var(--card);}
+  .agent-chips button{font-size:.78rem;border:1px solid var(--line);border-radius:999px;padding:6px 11px;color:var(--ink-soft);background:var(--paper);}
+  .agent-chips button:hover{border-color:var(--coral);color:var(--ink);}
+  .agent-input{display:flex;gap:8px;padding:11px;border-top:1px solid var(--line);background:var(--card);}
+  .agent-input input{flex:1;border:1px solid var(--line);border-radius:999px;padding:11px 15px;font-family:var(--body);font-size:.92rem;background:var(--paper);}
+  .agent-input input:focus{outline:none;border-color:var(--coral);}
+  .agent-input button{background:var(--coral);color:#fff;border-radius:999px;width:42px;flex:none;font-size:1.05rem;}
+  @media (max-width:560px){ .agent-panel{width:100%;right:0;bottom:0;border-radius:18px 18px 0 0;height:80vh;} .agent-fab{right:14px;bottom:14px;} }
+  @media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important;scroll-behavior:auto;}}
+</style>
+</head>
+<body>
+
+<header class="nav">
+  <div class="wrap nav-inner">
+    <a class="brand" href="#top"><svg class="mark" viewBox="0 0 40 40" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><rect width="40" height="40" rx="11" fill="#FFE6C9"/><circle cx="11" cy="12" r="4" fill="#FF8A5C"/><path d="M2 34 L15 17 L24 34 Z" fill="#2BB3AB"/><path d="M11 34 L25 12 L40 34 Z" fill="#0F827E"/><path d="M25 12 L21 19.5 L23 18.6 L25 19.6 L27 18.5 L29 19.4 Z" fill="#FFF7EE"/><path d="M25 12 V6" stroke="#2A2018" stroke-width="1.4" stroke-linecap="round"/><path class="flag" d="M25 6 L30.5 7.7 L25 9.4 Z" fill="#FF6A4D"/></svg>korabi</a>
+    <nav class="links">
+      <a href="#search">Find a flight</a>
+      <a href="/marketplace">Marketplace</a>
+      <a href="#inspo">Inspiration</a>
+      <a href="#how">How it works</a>
+    </nav>
+    <div class="nav-cta">
+      <a href="/marketplace" style="font-size:.92rem;font-weight:600;color:var(--coral-deep);">Seat marketplace</a>
+      <span class="auth-slot" id="authSlot"></span>
+      <span class="mode-pill" id="modePill">checking…</span>
+      <a href="#search" class="btn btn-primary">Search flights</a>
+      <button class="menu-btn" id="menuBtn" aria-label="Menu" aria-expanded="false">☰</button>
+    </div>
+  </div>
+  <div class="mobile-menu" id="mobileMenu">
+    <a href="#search">Find a flight</a>
+    <a href="/marketplace">Seat marketplace</a>
+    <a href="#inspo">Inspiration</a>
+    <a href="#how">How it works</a>
+  </div>
+</header>
+
+<a id="top"></a>
+<section class="hero">
+  <div class="topo" aria-hidden="true">
+    <svg viewBox="0 0 1120 560" preserveAspectRatio="xMidYMax slice">
+      <path class="c0" d="M410 560 C 492.5 540 492.5 322.2 560 150 C 627.5 322.2 627.5 540 710 560"/>
+      <path d="M260 560 C 425 540 425 345.4 560 190 C 695 345.4 695 540 860 560"/>
+      <path d="M110 560 C 357.5 540 357.5 368.6 560 230 C 762.5 368.6 762.5 540 1010 560"/>
+      <path d="M-40 560 C 290 540 290 391.8 560 270 C 830 391.8 830 540 1160 560"/>
+      <path d="M-190 560 C 222.5 540 222.5 415 560 310 C 897.5 415 897.5 540 1310 560"/>
+      <path d="M-340 560 C 155 540 155 438.2 560 350 C 965 438.2 965 540 1460 560"/>
+    </svg>
+  </div>
+  <span class="blob y"></span>
+  <div class="wrap">
+    <p class="eyebrow">No. 01 — real fares, live from 300+ airlines</p>
+    <h1>Go on, <span class="swash">take</span> the trip.</h1>
+    <p class="lede">Search live flights, pick the one that fits, and book it in a couple of taps. Powered by Duffel.</p>
+
+    <div class="trust-bar">
+      <div class="trust-item"><span class="ic">✈</span><span><b>300+ airlines</b>Live NDC &amp; GDS fares</span></div>
+      <div class="trust-item"><span class="ic">★</span><span><b>Korabi Cash</b>Earn on every booking</span></div>
+      <div class="trust-item"><span class="ic">🛡</span><span><b>Escrow marketplace</b>Verified seat resale</span></div>
+      <div class="trust-item"><span class="ic">✦</span><span><b>AI planner</b>Natural-language search</span></div>
+    </div>
+
+    <!-- SEARCH -->
+    <div class="searchcard" id="search">
+      <div class="triptype" role="group" aria-label="Trip type">
+        <button type="button" data-trip="round" aria-pressed="true">Round trip</button>
+        <button type="button" data-trip="oneway" aria-pressed="false">One way</button>
+      </div>
+      <form class="searchrow" id="searchForm" autocomplete="off">
+        <div class="fld" id="fldFrom">
+          <label for="from">From</label>
+          <input id="from" type="text" placeholder="City or airport" aria-label="Origin">
+          <div class="ac" id="acFrom" role="listbox"></div>
+        </div>
+        <button type="button" class="swap-btn" id="swapBtn" aria-label="Swap origin and destination">⇄</button>
+        <div class="fld" id="fldTo">
+          <label for="to">To</label>
+          <input id="to" type="text" placeholder="Where to?" aria-label="Destination">
+          <div class="ac" id="acTo" role="listbox"></div>
+        </div>
+        <div class="fld">
+          <label for="depart">Depart</label>
+          <input id="depart" type="date" aria-label="Departure date">
+        </div>
+        <div class="fld" id="fldReturn">
+          <label for="ret">Return</label>
+          <input id="ret" type="date" aria-label="Return date">
+        </div>
+        <div class="fld" id="fldPax" style="cursor:pointer;">
+          <label>Travelers &amp; cabin</label>
+          <div id="paxLabel" style="font-weight:500;">1 adult · Economy</div>
+          <div class="pax-pop" id="paxPop">
+            <div class="pax-row">
+              <div><b>Adults</b><br><span>12+</span></div>
+              <div class="stepper"><button type="button" data-pax="adults" data-d="-1">−</button><output id="outAdults">1</output><button type="button" data-pax="adults" data-d="1">+</button></div>
+            </div>
+            <div class="pax-row">
+              <div><b>Children</b><br><span>Under 12</span></div>
+              <div class="stepper"><button type="button" data-pax="children" data-d="-1">−</button><output id="outChildren">0</output><button type="button" data-pax="children" data-d="1">+</button></div>
+            </div>
+            <div class="child-ages" id="childAges"></div>
+            <div class="pax-row" style="border-top:1px solid var(--line);margin-top:6px;padding-top:12px;">
+              <div><b>Cabin</b></div>
+              <select id="cabin" style="border:1px solid var(--line);border-radius:8px;padding:6px 8px;font-family:var(--body);background:var(--paper);">
+                <option value="economy">Economy</option>
+                <option value="premium_economy">Premium economy</option>
+                <option value="business">Business</option>
+                <option value="first">First</option>
+              </select>
+            </div>
+          </div>
+        </div>
+        <div class="go"><button type="submit" class="btn btn-primary" id="searchBtn">Search</button></div>
+      </form>
+      <div class="banner" id="banner"></div>
+    </div>
+  </div>
+</section>
+
+<!-- RESULTS -->
+<section id="results" style="display:none;">
+  <div class="wrap">
+    <div class="results-top">
+      <div>
+        <p class="eyebrow" id="resultsEyebrow">No. 02 — your results</p>
+        <h2 id="resultsTitle">Flights for you</h2>
+        <p class="result-meta" id="resultMeta"></p>
+      </div>
+      <div class="sort">
+        <span>Sort by</span>
+        <button type="button" data-sort="price" aria-pressed="true">Cheapest</button>
+        <button type="button" data-sort="duration" aria-pressed="false">Fastest</button>
+      </div>
+    </div>
+    <div class="rewards-strip" id="rewardsStrip" style="display:none;"></div>
+    <div class="offers" id="offers"></div>
+    <div class="empty" id="emptyState">No flights came back for that search. Try nearby dates or a bigger city airport.</div>
+  </div>
+</section>
+
+<!-- INSPIRATION -->
+<section id="inspo" class="reveal">
+  <div class="wrap">
+    <div class="sec-head">
+      <p class="eyebrow">No. 03 — need ideas?</p>
+      <h2>Tap a route, we'll fill the search</h2>
+      <p>Not sure where to point the compass? Start with a crowd favorite and tweak from there.</p>
+    </div>
+    <div class="insp" id="inspo-grid"></div>
+  </div>
+</section>
+
+<!-- HOW -->
+<section style="padding:0;" class="reveal">
+  <div class="how">
+    <div class="wrap" style="padding:64px 48px;">
+      <p class="eyebrow">No. 04 — how korabi works</p>
+      <h2>Search, pick, gone.</h2>
+      <div class="steps">
+        <div class="step"><div class="num">01</div><h3>Search live fares</h3><p>Real availability and prices, pulled straight from the airlines the moment you search.</p></div>
+        <div class="step"><div class="num">02</div><h3>Pick your flight</h3><p>Compare times, stops and price. We re-check the fare the second you choose it.</p></div>
+        <div class="step"><div class="num">03</div><h3>Book in minutes</h3><p>Add traveler details, confirm, and your booking reference lands right away.</p></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<svg class="ridge" viewBox="0 0 1200 80" preserveAspectRatio="none" aria-hidden="true"><path d="M0 80 L0 70 L120 40 L210 62 L320 18 L430 58 L540 30 L660 66 L770 22 L880 56 L1000 34 L1100 60 L1200 44 L1200 80 Z"/></svg>
+
+<section id="seatDeals" style="display:none;padding:34px 0 6px;">
+  <div class="wrap">
+    <p class="eyebrow">From the seat marketplace</p>
+    <h2 style="font-family:var(--display);font-size:1.7rem;margin:0 0 4px;letter-spacing:-.02em;">Seats other travelers can't use</h2>
+    <p style="color:var(--ink-soft);margin:0 0 18px;font-size:.95rem;">Real tickets resold with an official airline name change — escrow-protected, verified by our ARC desk.</p>
+    <div id="seatDealsRow" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:14px;"></div>
+    <a href="/marketplace" style="display:inline-block;margin-top:16px;font-weight:600;color:var(--coral-deep);">Browse all seat deals →</a>
+  </div>
+</section>
+<script>
+(function(){
+  fetch("/api/marketplace/listings").then(function(r){return r.json();}).then(function(j){
+    var items=(j.listings||[]).slice().sort(function(a,b){return a.asking_price-b.asking_price;}).slice(0,3);
+    if(!items.length) return;
+    function money(a,c){ try{ return new Intl.NumberFormat(undefined,{style:"currency",currency:c||"USD",maximumFractionDigits:0}).format(Number(a)); }catch(e){ return (c||"$")+a; } }
+    document.getElementById("seatDealsRow").innerHTML=items.map(function(l){
+      var save=l.fare_paid&&Number(l.fare_paid)>Number(l.asking_price)?Math.round((1-l.asking_price/l.fare_paid)*100):0;
+      return '<a href="/marketplace" class="deal-card">'+
+        '<div style="font-family:var(--display);font-weight:800;font-size:1.2rem;">'+l.origin+' → '+l.destination+'</div>'+
+        '<div style="font-size:.84rem;color:var(--ink-soft);margin-top:3px;">'+new Date(l.departing_at).toLocaleDateString(undefined,{month:"short",day:"numeric"})+' · '+l.airline.name+'</div>'+
+        '<div style="font-family:var(--display);font-weight:800;font-size:1.25rem;margin-top:8px;color:var(--teal-deep);">'+money(l.asking_price,l.currency)+
+        (save>0?'<span class="save">'+save+'% off</span>':'')+'</div></a>';
+    }).join("");
+    document.getElementById("seatDeals").style.display="block";
+  }).catch(function(){});
+})();
+</script>
+<footer>
+  <div class="wrap">
+    <div class="foot-grid">
+      <div>
+        <a class="brand" href="#top"><svg class="mark" viewBox="0 0 40 40" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><rect width="40" height="40" rx="11" fill="#FFE6C9"/><circle cx="11" cy="12" r="4" fill="#FF8A5C"/><path d="M2 34 L15 17 L24 34 Z" fill="#2BB3AB"/><path d="M11 34 L25 12 L40 34 Z" fill="#0F827E"/><path d="M25 12 L21 19.5 L23 18.6 L25 19.6 L27 18.5 L29 19.4 Z" fill="#FFF7EE"/><path d="M25 12 V6" stroke="#2A2018" stroke-width="1.4" stroke-linecap="round"/><path class="flag" d="M25 6 L30.5 7.7 L25 9.4 Z" fill="#FF6A4D"/></svg>korabi</a>
+        <p class="lede">Live flight search and booking, powered by the Duffel API. Somewhere good is one search away.</p>
+      </div>
+      <div class="col"><h4>Fly</h4><a href="#search">Search flights</a><a href="/marketplace">Seat marketplace</a><a href="#inspo">Inspiration</a><a href="#how">How it works</a></div>
+      <div class="col"><h4>Account</h4><a href="/login">Sign in</a><a href="/account">My trips</a><a href="/login?register=1">Join free</a><a href="/admin" class="admin-only">Admin desk</a></div>
+      <div class="col"><h4>Built with</h4><a href="https://duffel.com/docs" target="_blank" rel="noopener">Duffel API</a><a href="https://duffel.com/docs/guides/getting-started-with-flights" target="_blank" rel="noopener">Flights guide</a></div>
+    </div>
+    <div class="foot-bottom">
+      <span>© 2026 Korabi Travel · Demo storefront</span>
+      <span>Operating carrier shown per US DOT rules.</span>
+    </div>
+  </div>
+</footer>
+
+<!-- BOOKING MODAL -->
+<div class="modal-bg" id="modalBg">
+  <div class="modal" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
+    <header><h3 id="modalTitle">Who's flying?</h3><button class="x" id="modalClose" aria-label="Close">✕</button></header>
+    <div class="modal-body" id="modalBody"></div>
+  </div>
+</div>
+
+<!-- PLANNER AGENT -->
+<button class="agent-fab" id="agentFab"><span class="spark">✦</span>Plan with AI</button>
+<div class="agent-panel" id="agentPanel" role="dialog" aria-label="Korabi planner">
+  <div class="agent-head">
+    <svg class="mk" viewBox="0 0 40 40" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><rect width="40" height="40" rx="11" fill="#FFE6C9"/><circle cx="11" cy="12" r="4" fill="#FF8A5C"/><path d="M2 34 L15 17 L24 34 Z" fill="#2BB3AB"/><path d="M11 34 L25 12 L40 34 Z" fill="#0F827E"/><path d="M25 12 L21 19.5 L23 18.6 L25 19.6 L27 18.5 L29 19.4 Z" fill="#FFF7EE"/><path d="M25 12 V6" stroke="#2A2018" stroke-width="1.4" stroke-linecap="round"/><path d="M25 6 L30.5 7.7 L25 9.4 Z" fill="#FF6A4D"/></svg>
+    <div><b>Korabi planner</b><br><span class="st" id="agentStatus">assistant</span></div>
+    <button class="x" id="agentClose" aria-label="Close planner">✕</button>
+  </div>
+  <div class="agent-log" id="agentLog"></div>
+  <div class="agent-chips" id="agentChips"></div>
+  <div class="agent-input">
+    <input id="agentInput" placeholder="Where do you want to go?" aria-label="Message the planner">
+    <button id="agentSend" aria-label="Send">↑</button>
+  </div>
+</div>
+
+<div class="toast" id="toast"><span id="toastMsg"></span></div>
+<button type="button" class="scroll-top" id="scrollTopBtn" aria-label="Back to top" title="Back to top">↑</button>
+
+<script>
+(function(){
+  "use strict";
+  var API = ""; // same-origin backend (e.g. http://localhost:3000)
+  var DEMO = false; // becomes true when backend/token isn't reachable
+
+  var $ = function(s,r){return (r||document).querySelector(s);};
+  var fmtMoney = function(amt,cur){
+    var n = Number(amt);
+    try{ return new Intl.NumberFormat(undefined,{style:"currency",currency:cur||"USD",maximumFractionDigits:0}).format(n); }
+    catch(e){ return (cur||"$")+" "+Math.round(n); }
+  };
+  function isoDur(d){ if(!d) return ""; var m=d.match(/PT(?:(\d+)H)?(?:(\d+)M)?/); if(!m) return ""; return (m[1]?m[1]+"h ":"")+(m[2]?m[2]+"m":"")||"—"; }
+  function hhmm(s){ try{ return new Date(s).toLocaleTimeString([], {hour:"2-digit",minute:"2-digit"}); }catch(e){ return ""; } }
+  function dateStr(s){ try{ return new Date(s).toLocaleDateString([], {weekday:"short",month:"short",day:"numeric"}); }catch(e){ return ""; } }
+
+  // ---- date defaults ----
+  var today = new Date();
+  function plus(days){ var d=new Date(today); d.setDate(d.getDate()+days); return d.toISOString().slice(0,10); }
+  var departEl=$("#depart"), retEl=$("#ret");
+  departEl.min = plus(0); retEl.min = plus(0);
+  departEl.value = plus(21); retEl.value = plus(28);
+  departEl.addEventListener("change", function(){ retEl.min = departEl.value; if(retEl.value < departEl.value) retEl.value = departEl.value; });
+
+  // ---- trip type ----
+  var tripType="round";
+  document.querySelectorAll(".triptype button").forEach(function(b){
+    b.addEventListener("click", function(){
+      document.querySelectorAll(".triptype button").forEach(function(x){x.setAttribute("aria-pressed","false");});
+      b.setAttribute("aria-pressed","true");
+      tripType=b.getAttribute("data-trip");
+      $("#fldReturn").classList.toggle("disabled", tripType==="oneway");
+    });
+  });
+
+  // ---- travelers ----
+  var pax={adults:1,children:[]};
+  var paxPop=$("#paxPop");
+  $("#fldPax").addEventListener("click", function(e){
+    if(e.target.closest(".pax-pop")) return;
+    paxPop.classList.toggle("open");
+  });
+  document.addEventListener("click", function(e){ if(!e.target.closest("#fldPax")) paxPop.classList.remove("open"); });
+  function renderChildAges(){
+    var box=$("#childAges"); box.innerHTML="";
+    pax.children.forEach(function(age,i){
+      var sel=document.createElement("select");
+      for(var a=0;a<=11;a++){ var o=document.createElement("option"); o.value=a; o.textContent=a===0?"<1 yr":a+" yr"; if(a===age)o.selected=true; sel.appendChild(o); }
+      sel.addEventListener("change", function(){ pax.children[i]=Number(sel.value); });
+      box.appendChild(sel);
+    });
+  }
+  function updatePax(){
+    $("#outAdults").textContent=pax.adults;
+    $("#outChildren").textContent=pax.children.length;
+    var bits=[pax.adults+" adult"+(pax.adults>1?"s":"")];
+    if(pax.children.length) bits.push(pax.children.length+" child"+(pax.children.length>1?"ren":""));
+    var cab=$("#cabin").options[$("#cabin").selectedIndex].text;
+    $("#paxLabel").textContent=bits.join(" · ")+" · "+cab;
+  }
+  document.querySelectorAll("[data-pax]").forEach(function(b){
+    b.addEventListener("click", function(){
+      var k=b.getAttribute("data-pax"), d=Number(b.getAttribute("data-d"));
+      if(k==="adults"){ pax.adults=Math.min(9,Math.max(1,pax.adults+d)); }
+      else { if(d>0 && pax.children.length<8) pax.children.push(8); if(d<0) pax.children.pop(); renderChildAges(); }
+      updatePax();
+    });
+  });
+  $("#cabin").addEventListener("change", updatePax);
+  updatePax();
+
+  // ---- autocomplete ----
+  function setupAC(inputSel, acSel){
+    var input=$(inputSel), ac=$(acSel), code=null, timer=null, items=[], active=-1;
+    input._code=null;
+    function close(){ ac.classList.remove("open"); active=-1; }
+    function pick(p){ input.value=p.iata_code+" · "+(p.city||p.name); input._code=p.iata_code; close(); }
+    function render(list){
+      items=list; ac.innerHTML="";
+      if(!list.length){ close(); return; }
+      list.forEach(function(p,i){
+        var b=document.createElement("button"); b.type="button"; b.setAttribute("role","option");
+        b.innerHTML='<span class="code">'+p.iata_code+'</span><span><span class="nm">'+p.name+'</span><br><span class="sub">'+[p.city,p.country].filter(Boolean).join(", ")+(p.type==="city"?" · all airports":"")+'</span></span>';
+        b.addEventListener("click", function(){ pick(p); });
+        ac.appendChild(b);
+      });
+      ac.classList.add("open");
+    }
+    input.addEventListener("input", function(){
+      input._code=null;
+      var q=input.value.trim();
+      clearTimeout(timer);
+      if(q.length<2){ close(); return; }
+      timer=setTimeout(function(){ lookupPlaces(q).then(render); }, 220);
+    });
+    input.addEventListener("keydown", function(e){
+      var btns=ac.querySelectorAll("button");
+      if(e.key==="ArrowDown"){ e.preventDefault(); active=Math.min(btns.length-1,active+1); }
+      else if(e.key==="ArrowUp"){ e.preventDefault(); active=Math.max(0,active-1); }
+      else if(e.key==="Enter" && ac.classList.contains("open") && active>=0){ e.preventDefault(); btns[active].click(); return; }
+      else if(e.key==="Escape"){ close(); return; }
+      btns.forEach(function(b,i){ b.classList.toggle("active", i===active); });
+    });
+    input.addEventListener("blur", function(){ setTimeout(close, 150); });
+    return input;
+  }
+  var fromInput=setupAC("#from","#acFrom");
+  var toInput=setupAC("#to","#acTo");
+
+  $("#swapBtn").addEventListener("click", function(){
+    var fv=fromInput.value, tv=toInput.value, fc=fromInput._code, tc=toInput._code;
+    fromInput.value=tv; toInput.value=fv;
+    fromInput._code=tc; toInput._code=fc;
+  });
+
+  // ---- fallback airport list (used only when backend is unreachable) ----
+  var FALLBACK=[
+    {iata_code:"LON",name:"London (all airports)",city:"London",country:"GB",type:"city"},
+    {iata_code:"NYC",name:"New York (all airports)",city:"New York",country:"US",type:"city"},
+    {iata_code:"PAR",name:"Paris (all airports)",city:"Paris",country:"FR",type:"city"},
+    {iata_code:"LIS",name:"Lisbon Portela",city:"Lisbon",country:"PT",type:"airport"},
+    {iata_code:"BCN",name:"Barcelona El Prat",city:"Barcelona",country:"ES",type:"airport"},
+    {iata_code:"FCO",name:"Rome Fiumicino",city:"Rome",country:"IT",type:"airport"},
+    {iata_code:"JFK",name:"John F. Kennedy",city:"New York",country:"US",type:"airport"},
+    {iata_code:"LAX",name:"Los Angeles Intl",city:"Los Angeles",country:"US",type:"airport"},
+    {iata_code:"NRT",name:"Tokyo Narita",city:"Tokyo",country:"JP",type:"airport"},
+    {iata_code:"DXB",name:"Dubai Intl",city:"Dubai",country:"AE",type:"airport"},
+    {iata_code:"KEF",name:"Reykjavík Keflavík",city:"Reykjavík",country:"IS",type:"airport"},
+    {iata_code:"RAK",name:"Marrakesh Menara",city:"Marrakesh",country:"MA",type:"airport"},
+    {iata_code:"SIN",name:"Singapore Changi",city:"Singapore",country:"SG",type:"airport"}
+  ];
+  function lookupPlaces(q){
+    return fetch(API+"/api/places?q="+encodeURIComponent(q))
+      .then(function(r){ if(!r.ok) throw 0; return r.json(); })
+      .then(function(j){ return j.places||[]; })
+      .catch(function(){
+        var s=q.toLowerCase();
+        return FALLBACK.filter(function(p){ return (p.name+p.city+p.iata_code).toLowerCase().indexOf(s)>-1; }).slice(0,6);
+      });
+  }
+
+  // ---- health check → live/demo pill ----
+  fetch(API+"/api/health").then(function(r){return r.json();}).then(function(j){
+    if(j && j.token_configured){ setPill(j.live_mode?"live":"test"); DEMO=false; }
+    else { setPill("demo"); DEMO=true; }
+    geminiConfigured = !!(j && j.gemini_configured);
+    if(j && j.loyalty){ loyaltyPct=j.loyalty.earn_pct||loyaltyPct; memberPct=j.loyalty.member_discount_pct||memberPct; }
+    paintRewardsStrip();
+    var st=$("#agentStatus"); if(st) st.textContent = geminiConfigured ? "Gemini · online" : "offline assistant";
+  }).catch(function(){ setPill("demo"); DEMO=true; });
+  function setPill(state){
+    var p=$("#modePill");
+    if(state==="live"){ p.textContent="● Live fares"; p.className="mode-pill live"; }
+    else if(state==="test"){ p.textContent="● Test mode"; p.className="mode-pill live"; }
+    else { p.textContent="Demo data"; p.className="mode-pill demo"; }
+  }
+
+  // ---- search ----
+  var lastResults=[], lastMeta={}, sortKey="price";
+  $("#searchForm").addEventListener("submit", function(e){
+    e.preventDefault();
+    var origin=fromInput._code, destination=toInput._code;
+    if(!origin || !destination){ toast("Pick an origin and destination from the list ✈️"); return; }
+    if(origin===destination){ toast("Those are the same place 🙂"); return; }
+
+    var payload={
+      origin:origin, destination:destination,
+      departure_date:departEl.value,
+      return_date: tripType==="round" ? retEl.value : null,
+      adults:pax.adults, children_ages:pax.children,
+      cabin_class:$("#cabin").value
+    };
+    lastMeta={origin:origin,destination:destination,round:tripType==="round"};
+
+    agentRecommendDone=false;
+    showResults();
+    renderSkeletons();
+    $("#searchBtn").disabled=true;
+
+    doSearch(payload).then(function(res){
+      lastResults=res.offers||[];
+      lastMeta.currency=res.currency;
+      lastMeta.passengers=res.passengers||[];
+      lastMeta.demo=res.demo;
+      banner(res.demo);
+      sortAndRender();
+      agentAfterResults();
+    }).catch(function(err){
+      banner(true);
+      lastResults=sampleOffers(payload);
+      lastMeta.demo=true; lastMeta.currency="USD";
+      lastMeta.passengers=buildSamplePax(payload);
+      sortAndRender();
+      agentAfterResults();
+    }).finally(function(){ $("#searchBtn").disabled=false; });
+  });
+
+  function doSearch(payload){
+    return fetch(API+"/api/search",{
+      method:"POST", headers:{"Content-Type":"application/json"}, body:JSON.stringify(payload)
+    }).then(function(r){
+      if(!r.ok){
+        return r.json().catch(function(){return {};}).then(function(j){
+          // 503 = no token → fall back to demo
+          if(r.status===503){ return {demo:true, offers:sampleOffers(payload), currency:"USD", passengers:buildSamplePax(payload)}; }
+          throw new Error(j.message||"Search failed");
+        });
+      }
+      return r.json();
+    });
+  }
+
+  function showResults(){ $("#results").style.display="block"; $("#results").scrollIntoView({behavior:"smooth"}); }
+  function renderSkeletons(){
+    var box=$("#offers"); box.innerHTML=""; $("#emptyState").classList.remove("show");
+    for(var i=0;i<4;i++){ var d=document.createElement("div"); d.className="sk";
+      d.innerHTML='<div><div class="ln" style="width:30%"></div><div class="ln" style="width:80%"></div><div class="ln" style="width:60%"></div></div><div><div class="ln" style="width:90%"></div><div class="ln" style="width:70%"></div></div>';
+      box.appendChild(d); }
+  }
+  function banner(isDemo){
+    var b=$("#banner");
+    if(isDemo){ b.classList.add("show"); b.innerHTML='✨ Showing <b style="margin:0 4px">sample</b> results. Run the Korabi Travel backend with your Duffel token (<code>DUFFEL_ACCESS_TOKEN</code>) to see live fares.'; }
+    else { b.classList.remove("show"); }
+  }
+
+  function durationMins(slice){
+    var s=slice && slice.duration && slice.duration.match(/PT(?:(\d+)H)?(?:(\d+)M)?/);
+    return s ? (Number(s[1]||0)*60+Number(s[2]||0)) : 99999;
+  }
+  function sortAndRender(){
+    var arr=lastResults.slice();
+    if(sortKey==="price") arr.sort(function(a,b){return Number(a.total_amount)-Number(b.total_amount);});
+    else arr.sort(function(a,b){
+      var da=(a.slices||[]).reduce(function(t,s){return t+durationMins(s);},0);
+      var db=(b.slices||[]).reduce(function(t,s){return t+durationMins(s);},0);
+      return da-db;
+    });
+    renderOffers(arr);
+  }
+  document.querySelectorAll(".sort button").forEach(function(b){
+    b.addEventListener("click", function(){
+      document.querySelectorAll(".sort button").forEach(function(x){x.setAttribute("aria-pressed","false");});
+      b.setAttribute("aria-pressed","true"); sortKey=b.getAttribute("data-sort"); sortAndRender();
+    });
+  });
+
+  function legHTML(slice){
+    var first=slice.segments[0], last=slice.segments[slice.segments.length-1];
+    var stops=slice.stops;
+    var stopTxt = stops===0 ? '<span class="stops nonstop">Nonstop</span>' : '<span class="stops">'+stops+' stop'+(stops>1?'s':'')+'</span>';
+    return '<div class="leg">'+
+      '<div><div class="time">'+hhmm(first.departing_at)+'</div><div class="ap">'+slice.origin+' · '+dateStr(first.departing_at)+'</div></div>'+
+      '<div class="path"><div class="dur">'+isoDur(slice.duration)+'</div><div class="bar"></div>'+stopTxt+'</div>'+
+      '<div style="text-align:right"><div class="time">'+hhmm(last.arriving_at)+'</div><div class="ap">'+slice.destination+'</div></div>'+
+    '</div>';
+  }
+  // ---- merchandising helpers (smart pitching) ----
+  var loyaltyPct=2, memberPct=4;
+  function durMinOf(o){ return (o.slices||[]).reduce(function(s,sl){ var m=/PT(?:(\d+)H)?(?:(\d+)M)?/.exec(sl.duration||""); return s+(m?((+(m[1]||0))*60+(+(m[2]||0))):0); },0); }
+  function stopsOf(o){ return (o.slices||[]).reduce(function(s,sl){ return s+(sl.stops||0); },0); }
+  function ensureMerch(arr){
+    if(!arr.length || arr[0].merch) return; // server already decorated
+    var prices=arr.map(function(o){return Number(o.total_amount);});
+    var durs=arr.map(durMinOf);
+    var minP=Math.min.apply(null,prices), maxP=Math.max.apply(null,prices);
+    var minD=Math.min.apply(null,durs), maxD=Math.max.apply(null,durs);
+    var norm=function(v,lo,hi){return hi>lo?(v-lo)/(hi-lo):0;};
+    var bestIdx=0,best=Infinity;
+    arr.forEach(function(o,i){ var sc=0.6*norm(prices[i],minP,maxP)+0.3*norm(durs[i],minD,maxD)+0.1*Math.min(1,stopsOf(o)/3); if(sc<best){best=sc;bestIdx=i;} });
+    var fastIdx=durs.indexOf(minD);
+    arr.forEach(function(o,i){
+      var b=[];
+      if(Number(o.total_amount)===minP) b.push("Cheapest");
+      if(i===fastIdx) b.push("Fastest");
+      if(stopsOf(o)===0) b.push("Nonstop");
+      if(i===bestIdx) b.push("Best value");
+      o.merch={ badges:b, member_price:Number(o.total_amount), member_save:0, loyalty_earn:Math.round(Number(o.total_amount)*loyaltyPct/100), loyalty_pct:loyaltyPct };
+    });
+  }
+  function badgeClass(b){ return b==="Cheapest"?"cheapest":b==="Best value"?"best":b==="Fastest"?"fastest":"nonstop"; }
+  function merchLine(o){
+    var m=o.merch||{}; var cur=o.total_currency||lastMeta.currency;
+    var earn=fmtMoney(m.loyalty_earn||0,cur);
+    if(window.korabiUser){
+      if(m.member_save>0) return '<div class="merch-line"><span class="member">Member price '+fmtMoney(m.member_price,cur)+'</span> · earn '+earn+' Korabi Cash</div>';
+      return '<div class="merch-line"><span class="earn">Earn '+earn+' Korabi Cash on this trip</span></div>';
+    }
+    return '<div class="merch-line"><a href="/login?next=/">Sign in</a> <span class="earn">to earn '+earn+' Korabi Cash'+(m.member_save>0?' + member price':'')+'</span></div>';
+  }
+  function holdHTML(o){ if(!o.expires_at) return ""; var ms=new Date(o.expires_at)-new Date(); if(ms<=0||ms>6*36e5) return ""; return '<div class="hold" data-exp="'+o.expires_at+'">Price held '+fmtCountdown(ms)+'</div>'; }
+  function fmtCountdown(ms){ var s=Math.max(0,Math.floor(ms/1000)); var m=Math.floor(s/60); s=s%60; return m+":"+(s<10?"0":"")+s; }
+  setInterval(function(){ document.querySelectorAll(".hold[data-exp]").forEach(function(el){ var ms=new Date(el.getAttribute("data-exp"))-new Date(); if(ms<=0){ el.remove(); return; } el.childNodes[el.childNodes.length-1].nodeValue="Price held "+fmtCountdown(ms); }); }, 1000);
+
+  function paintRewardsStrip(){
+    var s=$("#rewardsStrip"); if(!s) return;
+    if(window.korabiUser){
+      var cash=window.korabiUser.korabi_cash||0;
+      s.innerHTML='<b>★ Korabi Rewards</b> <span class="muted">Earn '+loyaltyPct+'% back as Korabi Cash on every booking'+(cash>0?' · your balance: $'+cash:'')+'.</span><span class="spacer"></span><span class="muted">✈ + 🏨 Add a hotel &amp; save — bundles coming soon</span>';
+    } else {
+      s.innerHTML='<b>★ Korabi Rewards</b> <span class="muted">Members earn '+loyaltyPct+'% back as Korabi Cash and unlock member prices.</span><span class="spacer"></span><a class="btn btn-primary" style="padding:9px 18px;font-size:.9rem;" href="/login?next=/">Join free</a>';
+    }
+  }
+  document.addEventListener("korabi-auth", function(){ paintRewardsStrip(); if(lastResults&&lastResults.length){ var box=$("#offers"); if(box&&box.children.length) sortAndRender(); } });
+
+  function renderOffers(arr){
+    var box=$("#offers"); box.innerHTML="";
+    $("#resultsTitle").textContent=(lastMeta.origin||"")+" → "+(lastMeta.destination||"")+(lastMeta.round?"  ·  round trip":"  ·  one way");
+    if(!arr.length){ $("#emptyState").classList.add("show"); $("#rewardsStrip").style.display="none"; var rm=$("#resultMeta"); if(rm) rm.textContent=""; return; }
+    $("#emptyState").classList.remove("show");
+    var rm=$("#resultMeta"); if(rm) rm.textContent=arr.length+" option"+(arr.length>1?"s":"")+(lastMeta.demo?" · sample data":"");
+    $("#rewardsStrip").style.display="flex"; paintRewardsStrip();
+    ensureMerch(arr);
+    arr.forEach(function(o){
+      var carrier=(o.slices[0].segments[0].operating_carrier)||(o.owner&&o.owner.name)||"Airline";
+      var logo = o.owner&&o.owner.logo ? '<img src="'+o.owner.logo+'" alt="">' : (o.owner&&o.owner.iata_code?o.owner.iata_code:"✈");
+      var cab=o.cabin_class?o.cabin_class.replace("_"," "):"";
+      var badges=(o.merch&&o.merch.badges||[]).map(function(b){ return '<span class="badge '+badgeClass(b)+'">'+b+'</span>'; }).join("");
+      if(o.fare_type==="net") badges+='<span class="badge net">Net fare</span>';
+      var el=document.createElement("article"); el.className="offer";
+      el.innerHTML=
+        '<div>'+(badges?'<div class="badges">'+badges+'</div>':'')+
+        '<div class="airline"><span class="logo">'+logo+'</span><b>'+carrier+'</b>'+(cab?'<span class="cabin">'+cab+'</span>':'')+'</div>'+
+        o.slices.map(legHTML).join("")+holdHTML(o)+'</div>'+
+        '<div class="price"><small>total · '+(lastMeta.passengers?lastMeta.passengers.length:1)+' pax</small>'+
+        '<strong>'+fmtMoney(o.total_amount,o.total_currency||lastMeta.currency)+'</strong>'+
+        merchLine(o)+
+        '<button class="btn btn-primary" style="padding:9px 18px;margin-top:8px;">Select</button></div>';
+      el.querySelector("button").addEventListener("click", function(){ openBooking(o); });
+      box.appendChild(el);
+    });
+  }
+
+  /* -------------------- booking flow -------------------- */
+  var modalBg=$("#modalBg"), modalBody=$("#modalBody");
+  function closeModal(){ modalBg.classList.remove("open"); }
+  $("#modalClose").addEventListener("click", closeModal);
+  modalBg.addEventListener("click", function(e){ if(e.target===modalBg) closeModal(); });
+
+  var DUFFEL_COMPONENTS_VERSION="3.3.1"; // bump to latest: github.com/duffelhq/duffel-components/releases
+  var ancScriptPromise=null;
+  function loadAncillaries(){
+    if(window.customElements && customElements.get && customElements.get("duffel-ancillaries")) return Promise.resolve(true);
+    if(ancScriptPromise) return ancScriptPromise;
+    ancScriptPromise=new Promise(function(resolve){
+      var s=document.createElement("script");
+      s.src="https://assets.duffel.com/components/ancillaries/"+DUFFEL_COMPONENTS_VERSION+"/index.js";
+      s.onload=function(){ resolve(true); };
+      s.onerror=function(){ resolve(false); };
+      document.head.appendChild(s);
+      setTimeout(function(){ resolve(Boolean(customElements.get && customElements.get("duffel-ancillaries"))); }, 4500);
+    });
+    return ancScriptPromise;
+  }
+
+  var booking=null;
+
+  function openBooking(offer){
+    $("#modalTitle").textContent="Who's flying?";
+    var paxList=lastMeta.passengers&&lastMeta.passengers.length?lastMeta.passengers:[{id:"p1",type:"adult"}];
+    var rt=(lastMeta.origin||"")+" → "+(lastMeta.destination||"");
+    booking={ offer:offer, base:Number(offer.total_amount), currency:offer.total_currency||lastMeta.currency,
+              paxN:paxList.length, cfar:null, insurance:false, insuranceUnit:24, anc:{services:[],amount:0,count:0},
+              duffelTotal:Number(offer.total_amount) };
+
+    var html='<div class="summary"><div><div class="rt">'+rt+'</div><div class="mt">'+
+      (offer.slices[0].segments[0].operating_carrier||"")+' · '+isoDur(offer.slices[0].duration)+
+      (offer.slices.length>1?' · round trip':'')+'</div></div><div class="pr" id="sumPrice">'+fmtMoney(offer.total_amount,booking.currency)+'</div></div>'+
+      '<div class="recheck" id="recheckLine"></div>';
+
+    html+='<div class="pax-form" id="paxForm">';
+    paxList.forEach(function(p,i){
+      var label = p.type==="adult"||!p.age&&p.type!=="child" ? "Adult "+(i+1) : "Child"+(p.age!=null?" (age "+p.age+")":" "+(i+1));
+      html+='<div class="pax-block" data-pid="'+(p.id||"p"+i)+'"><h4>'+label+'</h4>'+
+        '<div class="grid2">'+
+        '<div class="inp"><label>Title</label><select class="f-title"><option value="mr">Mr</option><option value="mrs">Mrs</option><option value="ms">Ms</option></select></div>'+
+        '<div class="inp"><label>Gender</label><select class="f-gender"><option value="m">Male</option><option value="f">Female</option></select></div>'+
+        '<div class="inp"><label>Given name</label><input class="f-given" placeholder="Amelia"></div>'+
+        '<div class="inp"><label>Family name</label><input class="f-family" placeholder="Earhart"></div>'+
+        '<div class="inp"><label>Date of birth</label><input class="f-dob" type="date"></div>'+
+        (i===0?'<div class="inp"><label>Email (contact)</label><input class="f-email" type="email" placeholder="you@email.com"></div>':'<div class="inp"><label>Phone</label><input class="f-phone" placeholder="+1 555 0100"></div>')+
+        '</div></div>';
+    });
+    html+='</div>';
+    html+='<div class="extras" id="extras"></div>';
+    html+='<div class="breakdown" id="breakdown"></div>';
+    html+='<div class="pay-box" id="payBox" style="display:none;"></div>';
+    html+='<p class="legal">By booking you agree to the airline\u2019s fare rules and the carrier\u2019s conditions of carriage. Payment is collected before your ticket is issued.'+(lastMeta.demo?' <b>Demo mode:</b> simulated card only.':' Live bookings use Duffel Payments.')+'</p>';
+    html+='<button class="btn btn-primary" id="confirmBtn" style="width:100%;">Confirm booking</button>';
+    modalBody.innerHTML=html;
+    modalBg.classList.add("open");
+    enhanceOffer(offer);
+    agentOnBookingOpen(offer);
+
+    $("#confirmBtn").addEventListener("click", function(){ submitOrder(offer); });
+  }
+
+  // Re-check live price, then load protection + extras from the offer's services
+  function enhanceOffer(offer){
+    var line=$("#recheckLine");
+    if(lastMeta.demo){
+      if(line) line.innerHTML='<span>Demo mode · prices shown are illustrative</span>';
+      booking.base=Number(offer.total_amount);
+      booking.cfar={ id:null, amount:Math.round(booking.base*0.08), currency:booking.currency, selected:false, demo:true };
+      renderExtras(); recompute();
+      return;
+    }
+    if(line) line.innerHTML='<span class="spin">⟳</span>&nbsp;Re-checking live price &amp; extras…';
+    Promise.all([
+      fetch(API+"/api/offers/"+offer.id).then(function(r){return r.ok?r.json():null;}).catch(function(){return null;}),
+      fetch(API+"/api/seat-maps/"+offer.id).then(function(r){return r.ok?r.json():null;}).catch(function(){return null;})
+    ]).then(function(rs){
+      var fresh=rs[0]&&rs[0].offer, seats=rs[1], bits=[];
+      if(fresh){
+        var oldAmt=Number(offer.total_amount), newAmt=Number(fresh.total_amount);
+        offer.total_amount=fresh.total_amount; offer.total_currency=fresh.total_currency;
+        booking.base=newAmt; booking.currency=fresh.total_currency||booking.currency;
+        bits.push(Math.abs(newAmt-oldAmt)>=1
+          ? '<span class="changed">Price updated to '+fmtMoney(newAmt,booking.currency)+'</span>'
+          : '<span class="ok">✓ Price confirmed</span>');
+        if(fresh.cfar) booking.cfar={ id:fresh.cfar.id, amount:Number(fresh.cfar.amount), currency:fresh.cfar.currency||booking.currency, selected:false };
+        if(fresh.extra_bags_available) bits.push('<span class="ok">✓ Extra bags available</span>');
+      }
+      booking.seatsAvailable = !!(seats && seats.available);
+      if(booking.seatsAvailable) bits.push('<span class="ok">✓ Seat selection available</span>');
+      if(line) line.innerHTML=bits.join("") || '<span class="ok">✓ Ready to book</span>';
+      renderExtras(); recompute();
+    });
+  }
+
+  function addonHTML(id,icon,title,desc,priceTxt,on,noteStyle){
+    return '<div class="addon'+(noteStyle?' note':'')+(on?' on':'')+'" data-addon="'+id+'">'+
+      '<span class="ic">'+icon+'</span>'+
+      '<div class="meta"><b>'+title+'</b><span>'+desc+'</span></div>'+
+      (priceTxt?'<span class="price">'+priceTxt+'</span>':'')+
+      (noteStyle?'':'<span class="check">'+(on?'✓':'')+'</span>')+
+      '</div>';
+  }
+
+  function renderExtras(){
+    var box=$("#extras"); if(!box) return;
+    var cur=booking.currency, html='<div class="sec-label">Protection &amp; extras</div>';
+
+    // Travel protection — Duffel Cancel For Any Reason (real, from available_services)
+    if(booking.cfar){
+      html+=addonHTML("cfar","🛟","Cancel for any reason",
+        "Cancel up to 24h before departure for a partial fare refund. Not insurance.",
+        "+ "+fmtMoney(booking.cfar.amount,cur), booking.cfar.selected, false);
+    } else {
+      html+=addonHTML("cfar-na","🛟","Cancel for any reason","Not offered by the airline for this fare.","",false,true);
+    }
+
+    // Travel insurance — honest partner add-on (Duffel does NOT provide medical cover)
+    html+=addonHTML("ins","🩺","Travel &amp; medical insurance",
+      "Trip, baggage &amp; medical cover via a partner insurer — billed separately from the flight.",
+      "+ "+fmtMoney(booking.insuranceUnit*booking.paxN,cur), booking.insurance, false);
+
+    // Seats & bags — Duffel ancillaries component
+    html+='<div class="sec-label" style="margin-top:4px;">Seats &amp; bags</div>'+
+      '<div id="ancBox"><button type="button" class="btn btn-ghost" id="ancLaunch" style="width:100%;">Choose seats &amp; bags</button><div id="ancMount"></div></div>';
+
+    box.innerHTML=html;
+
+    var cfarEl=box.querySelector('[data-addon="cfar"]');
+    if(cfarEl) cfarEl.addEventListener("click", function(){ booking.cfar.selected=!booking.cfar.selected; cfarEl.classList.toggle("on",booking.cfar.selected); cfarEl.querySelector(".check").textContent=booking.cfar.selected?"✓":""; recompute(); });
+    var insEl=box.querySelector('[data-addon="ins"]');
+    if(insEl) insEl.addEventListener("click", function(){ booking.insurance=!booking.insurance; insEl.classList.toggle("on",booking.insurance); insEl.querySelector(".check").textContent=booking.insurance?"✓":""; recompute(); });
+    var launch=box.querySelector("#ancLaunch");
+    if(launch) launch.addEventListener("click", launchAncillaries);
+    if(typeof pendingExtras!=="undefined" && pendingExtras) markSuggested(pendingExtras);
+  }
+
+  function recompute(){
+    var cur=booking.currency;
+    var duffelExtras=(booking.cfar&&booking.cfar.selected?Number(booking.cfar.amount):0)+Number(booking.anc.amount||0);
+    var duffelTotal=Number(booking.base)+duffelExtras;
+    booking.duffelTotal=duffelTotal;
+    var insTotal=booking.insurance?booking.insuranceUnit*booking.paxN:0;
+
+    var rows='<div class="row"><span>Flight ('+booking.paxN+' pax)</span><span class="mono">'+fmtMoney(booking.base,cur)+'</span></div>';
+    if(booking.cfar&&booking.cfar.selected) rows+='<div class="row"><span>Cancel for any reason</span><span class="mono">'+fmtMoney(booking.cfar.amount,cur)+'</span></div>';
+    if(Number(booking.anc.amount)>0) rows+='<div class="row"><span>Seats &amp; bags'+(booking.anc.count?' ('+booking.anc.count+')':'')+'</span><span class="mono">'+fmtMoney(booking.anc.amount,cur)+'</span></div>';
+    rows+='<div class="row total"><span>Total'+(insTotal?' (flight)':'')+'</span><span class="mono">'+fmtMoney(duffelTotal,cur)+'</span></div>';
+    if(insTotal) rows+='<div class="row"><span>+ Travel insurance (billed separately)</span><span class="mono">'+fmtMoney(insTotal,cur)+'</span></div>';
+    var bd=$("#breakdown"); if(bd) bd.innerHTML=rows;
+    var sp=$("#sumPrice"); if(sp) sp.textContent=fmtMoney(duffelTotal,cur);
+    var cb=$("#confirmBtn"); if(cb) cb.textContent="Confirm booking · "+fmtMoney(duffelTotal,cur);
+  }
+
+  function ancAmount(md){
+    if(!md) return 0;
+    if(md.totalAmount!=null && md.offerTotalAmount!=null) return Math.max(0, Number(md.totalAmount)-Number(md.offerTotalAmount));
+    var list=md.services||md.ancillaries||[];
+    if(Array.isArray(list)) return list.reduce(function(t,s){ return t+Number(s.total_amount||s.amount||0)*Number(s.quantity||1); },0);
+    return 0;
+  }
+
+  function launchAncillaries(){
+    var mount=$("#ancMount"), launch=$("#ancLaunch");
+    if(!mount) return;
+
+    if(lastMeta.demo){
+      launch.style.display="none";
+      mount.innerHTML='<div style="margin-top:10px;display:flex;flex-direction:column;gap:10px;">'+
+        addonHTML("bag","🧳","Extra checked bag","23kg, added to every flight","+ "+fmtMoney(45,booking.currency),false,false)+
+        addonHTML("seat","💺","Preferred seat","Window or aisle, per traveler","+ "+fmtMoney(18,booking.currency),false,false)+
+        '</div>';
+      var bagEl=mount.querySelector('[data-addon="bag"]'), seatEl=mount.querySelector('[data-addon="seat"]');
+      function rec(){ var amt=0,cnt=0; if(bagEl.classList.contains("on")){amt+=45;cnt++;} if(seatEl.classList.contains("on")){amt+=18*booking.paxN;cnt+=booking.paxN;} booking.anc={services:[],amount:amt,count:cnt}; recompute(); }
+      bagEl.addEventListener("click", function(){ bagEl.classList.toggle("on"); bagEl.querySelector(".check").textContent=bagEl.classList.contains("on")?"✓":""; rec(); });
+      seatEl.addEventListener("click", function(){ seatEl.classList.toggle("on"); seatEl.querySelector(".check").textContent=seatEl.classList.contains("on")?"✓":""; rec(); });
+      return;
+    }
+
+    launch.disabled=true; launch.textContent="Loading seat & bag options…";
+    loadAncillaries().then(function(ok){
+      if(!ok){ launch.disabled=false; launch.textContent="Seat & bag selection unavailable here"; return; }
+      return fetch(API+"/api/ancillaries/"+booking.offer.id).then(function(r){return r.ok?r.json():null;}).then(function(data){
+        if(!data||!data.offer){ launch.disabled=false; launch.textContent="Couldn't load seat & bag options"; return; }
+        launch.style.display="none";
+        mount.innerHTML='<duffel-ancillaries class="duffel-anc-mount"></duffel-ancillaries>';
+        var el=mount.querySelector("duffel-ancillaries");
+        var pax=collectPassengers().passengers.map(function(p){
+          return { id:p.id, given_name:p.given_name||"Test", family_name:p.family_name||"Traveler",
+                   gender:p.gender, title:p.title, born_on:p.born_on||"1990-01-01", email:p.email, phone_number:p.phone_number };
+        });
+        el.addEventListener("onPayloadReady", function(ev){
+          var d=ev.detail&&ev.detail.data, md=ev.detail&&ev.detail.metadata;
+          booking.anc={ services:(d&&d.services)||[], amount:ancAmount(md), count:((d&&d.services)||[]).length };
+          recompute();
+        });
+        el.render({ offer:data.offer, seat_maps:data.seat_maps||[], services:["bags","seats"], passengers:pax,
+          styles:{ accentColor:"15,130,126", buttonCornerRadius:"999px", fontFamily:"DM Sans, system-ui, sans-serif" } });
+      });
+    }).catch(function(){ launch.disabled=false; launch.textContent="Choose seats & bags"; });
+  }
+
+  function collectPassengers(){
+    var blocks=modalBody.querySelectorAll(".pax-block");
+    var contactEmail = (modalBody.querySelector(".f-email")||{}).value || "traveler@example.com";
+    var out=[], ok=true, adultIds=[], infants=[];
+    blocks.forEach(function(bl){
+      var g=bl.querySelector(".f-given").value.trim();
+      var f=bl.querySelector(".f-family").value.trim();
+      var dob=bl.querySelector(".f-dob").value;
+      if(!g||!f||!dob) ok=false;
+      var phone=(bl.querySelector(".f-phone")||{}).value || "+442080160508";
+      var p={
+        id: bl.getAttribute("data-pid"),
+        title: bl.querySelector(".f-title").value,
+        gender: bl.querySelector(".f-gender").value,
+        given_name:g, family_name:f, born_on:dob,
+        email: contactEmail, phone_number: phone
+      };
+      out.push(p);
+    });
+    return {ok:ok, passengers:out};
+  }
+
+  function submitOrder(offer){
+    var c=collectPassengers();
+    if(!c.ok){ toast("Fill in every traveler's name and birth date ✏️"); return; }
+    var btn=$("#confirmBtn");
+    if(booking.paymentIntent && booking.paymentIntent.status==="succeeded"){
+      placeOrder(offer, c.passengers, btn);
+      return;
+    }
+    btn.disabled=true; btn.textContent="Preparing payment…";
+
+    var services=[];
+    if(booking.cfar && booking.cfar.selected && booking.cfar.id) services.push({ id:booking.cfar.id, quantity:1 });
+    (booking.anc.services||[]).forEach(function(s){ services.push(s); });
+    booking._pendingServices=services;
+    booking._pendingPassengers=c.passengers;
+
+    (window.korabiFetch||fetch)(API+"/api/payments/intent",{
+      method:"POST", headers:{"Content-Type":"application/json"},
+      body:JSON.stringify({
+        offer_id:offer.id,
+        amount:String(Number(booking.duffelTotal).toFixed(2)),
+        currency:booking.currency
+      })
+    }).then(function(r){ return r.json().then(function(j){ if(!r.ok) throw new Error(j.message||"Payment setup failed"); return j; }); })
+    .then(function(j){
+      booking.paymentIntent=j.payment_intent;
+      btn.style.display="none";
+      showPaymentStep(j.payment_intent, offer);
+    })
+    .catch(function(err){ btn.disabled=false; btn.textContent="Confirm booking · "+fmtMoney(booking.duffelTotal,booking.currency); toast("⚠️ "+err.message); });
+  }
+
+  function showPaymentStep(intent, offer){
+    var box=$("#payBox"); if(!box) return;
+    box.style.display="block";
+    if(intent.demo || intent.client_token==="demo"){
+      box.innerHTML=
+        '<div class="sec-label">Payment</div>'+
+        '<p class="pay-note">Demo checkout — no real charge. Use any test card details.</p>'+
+        '<div class="pay-grid">'+
+        '<div class="inp"><label>Card number</label><input id="demoCard" placeholder="4242 4242 4242 4242" inputmode="numeric"></div>'+
+        '<div class="inp"><label>Expiry</label><input id="demoExp" placeholder="12/28"></div>'+
+        '<div class="inp"><label>CVC</label><input id="demoCvc" placeholder="123"></div>'+
+        '</div>'+
+        '<button class="btn btn-primary" id="payDemoBtn" style="width:100%;margin-top:12px;">Pay '+fmtMoney(booking.duffelTotal,booking.currency)+' &amp; book</button>';
+      $("#payDemoBtn").addEventListener("click", function(){
+        var payBtn=$("#payDemoBtn"); payBtn.disabled=true; payBtn.textContent="Processing…";
+        (window.korabiFetch||fetch)(API+"/api/payments/intent/"+intent.id+"/confirm",{
+          method:"POST", headers:{"Content-Type":"application/json"},
+          body:JSON.stringify({ card_last_four: (($("#demoCard")||{}).value||"4242").replace(/\D/g,"").slice(-4)||"4242" })
+        }).then(function(r){ return r.json().then(function(j){ if(!r.ok) throw new Error(j.message||"Payment failed"); return j; }); })
+        .then(function(j){
+          booking.paymentIntent=j.payment_intent;
+          placeOrder(offer, booking._pendingPassengers, payBtn);
+        })
+        .catch(function(err){ payBtn.disabled=false; payBtn.textContent="Pay "+fmtMoney(booking.duffelTotal,booking.currency)+" & book"; toast("⚠️ "+err.message); });
+      });
+      return;
+    }
+    box.innerHTML=
+      '<div class="sec-label">Payment</div>'+
+      '<p class="pay-note">Complete payment with Duffel Payments, then return here to book.</p>'+
+      '<div id="duffelPayMount" class="duffel-pay-mount"></div>'+
+      '<button class="btn btn-primary" id="payLiveBtn" style="width:100%;margin-top:12px;display:none;">Continue to booking</button>';
+    loadDuffelPayments(intent.client_token).then(function(ok){
+      if(!ok){
+        box.innerHTML+='<p class="pay-note">Load Duffel Payments component failed — refresh or contact support.</p>';
+        return;
+      }
+      var el=document.createElement("duffel-payments");
+      el.setAttribute("payment-intent-client-token", intent.client_token);
+      $("#duffelPayMount").appendChild(el);
+      $("#payLiveBtn").style.display="block";
+      $("#payLiveBtn").addEventListener("click", function(){
+        pollPaymentIntent(intent.id, offer);
+      });
+    });
+  }
+
+  var payScriptPromise=null;
+  function loadDuffelPayments(clientToken){
+    if(!clientToken || clientToken==="demo") return Promise.resolve(false);
+    if(window.customElements && customElements.get && customElements.get("duffel-payments")) return Promise.resolve(true);
+    if(payScriptPromise) return payScriptPromise;
+    payScriptPromise=new Promise(function(resolve){
+      var s=document.createElement("script");
+      s.src="https://assets.duffel.com/components/payments/"+DUFFEL_COMPONENTS_VERSION+"/index.js";
+      s.onload=function(){ resolve(true); };
+      s.onerror=function(){ resolve(false); };
+      document.head.appendChild(s);
+      setTimeout(function(){ resolve(Boolean(customElements.get && customElements.get("duffel-payments"))); }, 4500);
+    });
+    return payScriptPromise;
+  }
+
+  function pollPaymentIntent(intentId, offer){
+    var btn=$("#payLiveBtn"); if(btn){ btn.disabled=true; btn.textContent="Checking payment…"; }
+    fetch(API+"/api/payments/intent/"+intentId).then(function(r){ return r.json(); })
+    .then(function(j){
+      if(j.payment_intent && j.payment_intent.status==="succeeded"){
+        booking.paymentIntent=j.payment_intent;
+        placeOrder(offer, booking._pendingPassengers, btn||$("#confirmBtn"));
+        return;
+      }
+      if(btn){ btn.disabled=false; btn.textContent="Continue to booking"; }
+      toast("Payment not confirmed yet — complete card entry first.");
+    }).catch(function(){ if(btn){ btn.disabled=false; btn.textContent="Continue to booking"; } toast("Could not verify payment."); });
+  }
+
+  function placeOrder(offer, passengers, btn){
+    if(btn){ btn.disabled=true; btn.textContent="Booking…"; }
+    var services=booking._pendingServices||[];
+    (window.korabiFetch||fetch)(API+"/api/orders",{
+      method:"POST", headers:{"Content-Type":"application/json"},
+      body:JSON.stringify({
+        offer_id:offer.id,
+        payment_intent_id:booking.paymentIntent.id,
+        total_amount:String(Number(booking.duffelTotal).toFixed(2)),
+        total_currency:booking.currency,
+        passengers:passengers,
+        services:services
+      })
+    }).then(function(r){ return r.json().then(function(j){ if(!r.ok) throw new Error(j.message||"Booking failed"); return j; }); })
+    .then(function(j){ showConfirmation(offer, j.order.booking_reference, passengers); })
+    .catch(function(err){
+      if(btn){ btn.disabled=false; btn.textContent="Try again"; }
+      toast("⚠️ "+err.message);
+    });
+  }
+
+  function demoRef(){ var s="ABCDEFGHJKLMNPQRSTUVWXYZ23456789",r=""; for(var i=0;i<6;i++) r+=s[Math.floor(Math.random()*s.length)]; return r; }
+  function showConfirmation(offer, ref, passengers){
+    $("#modalTitle").textContent="You're booked!";
+    var cur=booking?booking.currency:(offer.total_currency||lastMeta.currency);
+    var total=booking?booking.duffelTotal:Number(offer.total_amount);
+    var extras=[];
+    if(booking&&booking.cfar&&booking.cfar.selected) extras.push("Cancel for any reason");
+    if(booking&&Number(booking.anc.amount)>0) extras.push("seats & bags");
+    var insLine = booking&&booking.insurance ? '<p style="font-size:.8rem;color:var(--ink-soft);margin-top:6px;">+ Travel insurance arranged separately ('+fmtMoney(booking.insuranceUnit*booking.paxN,cur)+').</p>' : '';
+    modalBody.innerHTML=
+      '<div class="confirm"><div class="tick">✓</div>'+
+      '<h3 style="font-size:1.5rem;margin-bottom:6px;">'+(lastMeta.origin)+' → '+(lastMeta.destination)+'</h3>'+
+      '<p style="color:var(--ink-soft);margin-bottom:6px;">'+passengers.map(function(p){return p.given_name+" "+p.family_name;}).join(", ")+'</p>'+
+      '<div class="ref">'+ref+'</div>'+
+      '<p style="color:var(--ink-soft);font-size:.85rem;">Booking reference · '+fmtMoney(total,cur)+' total'+(extras.length?' · incl. '+extras.join(" + "):'')+'</p>'+
+      insLine+
+      (lastMeta.demo?'<p style="font-size:.8rem;color:var(--ink-soft);margin-top:10px;">Demo booking saved server-side — connect Duffel for live test tickets.</p>':'')+
+      '<button class="btn btn-ink" id="doneBtn" style="margin-top:18px;">Done</button></div>';
+    $("#doneBtn").addEventListener("click", closeModal);
+    toast("📮 Booked! Reference "+ref);
+  }
+
+  /* -------------------- sample data (preview / no-backend) -------------------- */
+  function buildSamplePax(payload){
+    var arr=[]; for(var i=0;i<payload.adults;i++) arr.push({id:"pax_a"+i,type:"adult"});
+    (payload.children_ages||[]).forEach(function(age,i){ arr.push({id:"pax_c"+i,type:"child",age:age}); });
+    return arr;
+  }
+  function sampleOffers(payload){
+    var airlines=[["British Airways","BA"],["TAP Air Portugal","TP"],["Lufthansa","LH"],["KLM","KL"],["Iberia","IB"],["Finnair","AY"]];
+    var paxN=payload.adults+(payload.children_ages?payload.children_ages.length:0);
+    function seg(o,d,dep,dur,carrier){
+      var depT=new Date(payload.departure_date+"T"+dep+":00");
+      var arr=new Date(depT.getTime()+dur*60000);
+      return {origin:o,destination:d,departing_at:depT.toISOString(),arriving_at:arr.toISOString(),
+        operating_carrier:carrier,marketing_carrier:carrier,flight_number:String(100+Math.floor(Math.random()*800))};
+    }
+    function slice(o,d,date,stops,baseDep,carrier){
+      var segs; var totalDur;
+      if(stops===0){ totalDur=130+Math.floor(Math.random()*120); segs=[seg(o,d,baseDep,totalDur,carrier)]; }
+      else { var hub=["MAD","CDG","AMS","FRA","LIS"][Math.floor(Math.random()*5)]; var d1=80+Math.floor(Math.random()*60); var d2=90+Math.floor(Math.random()*80); totalDur=d1+80+d2;
+        segs=[seg(o,hub,baseDep,d1,carrier),seg(hub,d,addMin(baseDep,d1+80),d2,carrier)]; }
+      return {origin:o,destination:d,stops:stops,duration:"PT"+Math.floor(totalDur/60)+"H"+(totalDur%60)+"M",segments:segs};
+    }
+    function addMin(hhmm,min){ var p=hhmm.split(":"); var t=Number(p[0])*60+Number(p[1])+min; t%=1440; return String(Math.floor(t/60)).padStart(2,"0")+":"+String(t%60).padStart(2,"0"); }
+    var out=[];
+    for(var i=0;i<6;i++){
+      var a=airlines[i%airlines.length];
+      var stops=i<2?0:(i<4?0:1);
+      var base=(7+i*2)%24; var dep=String(base).padStart(2,"0")+":"+["05","20","35","50"][i%4];
+      var price=Math.round((180+i*65+Math.random()*90)*paxN);
+      var slices=[slice(payload.origin,payload.destination,payload.departure_date,stops,dep,a[0])];
+      if(payload.return_date) slices.push(slice(payload.destination,payload.origin,payload.return_date,stops,addMin(dep,180),a[0]));
+      out.push({id:"off_demo_"+i, total_amount:String(price), total_currency:"USD",
+        cabin_class:payload.cabin_class, owner:{name:a[0],iata_code:a[1],logo:null},
+        slices:slices});
+    }
+    return out;
+  }
+
+  /* -------------------- inspiration -------------------- */
+  var inspo=[
+    {from:"NYC",to:"LIS",fromN:"New York",toN:"Lisbon",g:"linear-gradient(160deg,#7CC4D6,#2C8FA8)"},
+    {from:"LON",to:"RAK",fromN:"London",toN:"Marrakesh",g:"linear-gradient(160deg,#FFB45A,#FF6A4D)"},
+    {from:"LAX",to:"NRT",fromN:"Los Angeles",toN:"Tokyo",g:"linear-gradient(160deg,#FF9E6E,#E4502F)"},
+    {from:"NYC",to:"KEF",fromN:"New York",toN:"Reykjavík",g:"linear-gradient(160deg,#A8E0DD,#2E8B8A)"}
+  ];
+  (function(){
+    var box=$("#inspo-grid");
+    inspo.forEach(function(t){
+      var b=document.createElement("button");
+      b.innerHTML='<div class="ph" style="background:'+t.g+'"></div><div class="bd"><div class="rt">'+t.from+' → '+t.to+'</div><div class="pl">'+t.fromN+' to '+t.toN+'</div></div>';
+      b.addEventListener("click", function(){
+        fromInput.value=t.from+" · "+t.fromN; fromInput._code=t.from;
+        toInput.value=t.to+" · "+t.toN; toInput._code=t.to;
+        $("#search").scrollIntoView({behavior:"smooth"});
+        setTimeout(function(){ $("#searchForm").requestSubmit(); }, 500);
+      });
+      box.appendChild(b);
+    });
+  })();
+
+  /* -------------------- planner agent (Gemini orchestration) -------------------- */
+  var geminiConfigured=false, agentStep="search", agentBusy=false, agentRecommendDone=false, agentBookingDone=false, pendingExtras=null;
+  var agentFab=$("#agentFab"), agentPanel=$("#agentPanel"), agentLog=$("#agentLog"), agentInput=$("#agentInput");
+
+  function agentOpen(){ agentPanel.classList.add("open"); agentFab.style.display="none"; setTimeout(function(){ agentInput.focus(); },50); }
+  function agentCloseFn(){ agentPanel.classList.remove("open"); agentFab.style.display="flex"; }
+  agentFab.addEventListener("click", agentOpen);
+  $("#agentClose").addEventListener("click", agentCloseFn);
+
+  function agentMsg(text, cls){ var d=document.createElement("div"); d.className="msg "+(cls||"bot"); d.innerHTML=text; agentLog.appendChild(d); agentLog.scrollTop=agentLog.scrollHeight; return d; }
+  function agentTyping(on){ var ex=agentLog.querySelector(".agent-typing"); if(on){ if(!ex){ var d=document.createElement("div"); d.className="agent-typing"; d.textContent="planning…"; agentLog.appendChild(d); agentLog.scrollTop=agentLog.scrollHeight; } } else if(ex){ ex.remove(); } }
+  function setChips(list){ var box=$("#agentChips"); box.innerHTML=""; (list||[]).forEach(function(c){ var b=document.createElement("button"); b.textContent=c; b.addEventListener("click", function(){ agentInput.value=c; agentSend(); }); box.appendChild(b); }); }
+
+  agentMsg("Hi! I'm your Korabi planner. Tell me where and when you'd like to go — e.g. <em>“2 of us, New York to Lisbon, first week of July, economy.”</em>");
+  setChips(["NYC → Lisbon next month","London to Tokyo in business","One-way LA → Reykjavík"]);
+
+  function callAgent(step, message, context){
+    if(!geminiConfigured) return Promise.resolve(localAgent(step,message,context));
+    return fetch(API+"/api/agent",{ method:"POST", headers:{"Content-Type":"application/json"}, body:JSON.stringify({step:step,message:message,context:context}) })
+      .then(function(r){ if(!r.ok) throw 0; return r.json(); })
+      .catch(function(){ return localAgent(step,message,context); });
+  }
+
+  function agentSend(){
+    var text=agentInput.value.trim(); if(!text||agentBusy) return;
+    agentInput.value=""; agentMsg(text,"user"); setChips([]); agentBusy=true; agentTyping(true);
+    callAgent(agentStep, text, agentContext()).then(function(out){
+      agentTyping(false); agentBusy=false;
+      if(out.reply) agentMsg(out.reply);
+      applyAgentAction(out.action);
+    }).catch(function(){ agentTyping(false); agentBusy=false; agentMsg("Hmm, I had trouble there — mind rephrasing?"); });
+  }
+  $("#agentSend").addEventListener("click", agentSend);
+  agentInput.addEventListener("keydown", function(e){ if(e.key==="Enter") agentSend(); });
+
+  function agentContext(){
+    if(agentStep==="results"){
+      return { offers: lastResults.slice(0,8).map(function(o,i){ return { i:i, airline:(o.owner&&o.owner.name)||(o.slices[0].segments[0].operating_carrier), price:Number(o.total_amount), currency:o.total_currency, stops:o.slices[0].stops, duration:o.slices[0].duration }; }),
+               route:(lastMeta.origin||"")+"→"+(lastMeta.destination||""), round:!!lastMeta.round };
+    }
+    if(agentStep==="booking" && booking){
+      return { route:(lastMeta.origin||"")+"→"+(lastMeta.destination||""), price:booking.base, currency:booking.currency, paxN:booking.paxN,
+               cabin:(booking.offer.cabin_class||""), round:(booking.offer.slices.length>1), cfar_available:!!(booking.cfar&&booking.cfar.id), seats_available:!!booking.seatsAvailable };
+    }
+    return {};
+  }
+
+  function applyAgentAction(a){
+    if(!a||!a.type||a.type==="none") return;
+    if(a.type==="search" && a.search) runAgentSearch(a.search);
+    else if(a.type==="recommend" && a.recommend_index!=null) highlightPick(a.recommend_index, a.recommend_reason);
+    else if(a.type==="suggest_extras" && a.extras) applyExtraSuggestions(a.extras);
+  }
+
+  function setTripType(t){ var b=document.querySelector('.triptype button[data-trip="'+t+'"]'); if(b) b.click(); }
+  function runAgentSearch(s){
+    if(s.origin){ fromInput.value=String(s.origin).toUpperCase(); fromInput._code=String(s.origin).toUpperCase(); }
+    if(s.destination){ toInput.value=String(s.destination).toUpperCase(); toInput._code=String(s.destination).toUpperCase(); }
+    if(s.return_date) setTripType("round"); else if(s.departure_date) setTripType("oneway");
+    if(s.departure_date) departEl.value=s.departure_date;
+    if(s.return_date) retEl.value=s.return_date;
+    if(s.adults) pax.adults=Math.min(9,Math.max(1,Number(s.adults)));
+    if(Array.isArray(s.children_ages)){ pax.children=s.children_ages.map(function(a){return Math.max(0,Math.min(11,Number(a)||0));}); renderChildAges(); }
+    if(s.cabin_class){ var cab=$("#cabin"); for(var i=0;i<cab.options.length;i++){ if(cab.options[i].value===s.cabin_class) cab.selectedIndex=i; } }
+    updatePax();
+    $("#search").scrollIntoView({behavior:"smooth"});
+    setTimeout(function(){ $("#searchForm").requestSubmit(); }, 350);
+  }
+
+  function highlightPick(idx, reason){
+    var cards=$("#offers").querySelectorAll(".offer"); if(!cards.length) return;
+    idx=Math.max(0,Math.min(cards.length-1,Number(idx)||0));
+    cards.forEach(function(c){ c.classList.remove("pick"); var bd=c.querySelector(".pick-badge"); if(bd) bd.remove(); });
+    var el=cards[idx]; el.classList.add("pick");
+    var badge=document.createElement("span"); badge.className="pick-badge"; badge.textContent="★ Planner's pick"; el.appendChild(badge);
+    el.scrollIntoView({behavior:"smooth", block:"center"});
+  }
+
+  function labelFor(k){ return k==="cfar"?"cancel for any reason":(k==="insurance"?"travel insurance":(k==="bags"?"an extra bag":"seat selection")); }
+  function markSuggested(list){
+    var box=$("#extras"); if(!box||!list) return;
+    var keys=list.map(function(x){return x.key;});
+    if(keys.indexOf("cfar")>-1){ var c=box.querySelector('[data-addon="cfar"]'); if(c) c.classList.add("suggested"); }
+    if(keys.indexOf("insurance")>-1){ var n=box.querySelector('[data-addon="ins"]'); if(n) n.classList.add("suggested"); }
+    if(keys.indexOf("bags")>-1||keys.indexOf("seats")>-1){ var l=box.querySelector("#ancLaunch"); if(l) l.classList.add("suggested"); }
+  }
+  function applyExtraSuggestions(list){
+    pendingExtras=list; markSuggested(list);
+    if(list.length && agentPanel.classList.contains("open"))
+      agentMsg("For this trip I'd consider:<br>"+list.map(function(x){return "• <b>"+labelFor(x.key)+"</b> — "+x.reason;}).join("<br>"),"tip");
+  }
+
+  // proactive orchestration between steps
+  function agentAfterResults(){
+    agentStep="results";
+    if(agentRecommendDone || !lastResults.length) return;
+    agentRecommendDone=true;
+    callAgent("results","Which option is best?",agentContext()).then(function(out){
+      if(out&&out.action&&out.action.type==="recommend"&&out.action.recommend_index!=null){
+        highlightPick(out.action.recommend_index, out.action.recommend_reason);
+        var why=out.action.recommend_reason?(" — "+out.action.recommend_reason):"";
+        if(agentPanel.classList.contains("open")) agentMsg("My pick is option "+(out.action.recommend_index+1)+why,"tip");
+      }
+    }).catch(function(){});
+  }
+  function agentOnBookingOpen(offer){
+    agentStep="booking"; agentBookingDone=false; pendingExtras=null;
+    setTimeout(function(){
+      if(agentBookingDone) return; agentBookingDone=true;
+      callAgent("booking","What add-ons should I consider?",agentContext()).then(function(out){
+        if(out&&out.action&&out.action.type==="suggest_extras"&&out.action.extras) applyExtraSuggestions(out.action.extras);
+      }).catch(function(){});
+    }, 700);
+  }
+
+  // ---- local fallback agent (no Gemini key / offline preview) ----
+  function localAgent(step, message, context){
+    if(step==="results") return { reply:"Cheapest sensible fare is option 1.", action:{ type:"recommend", recommend_index:0, recommend_reason:"lowest price with a reasonable duration" } };
+    if(step==="booking"){
+      var ex=[], c=context||{};
+      if(c.cfar_available) ex.push({key:"cfar",reason:"plans change — cancel up to 24h before for a partial refund"});
+      ex.push({key:"bags",reason:"basic fares often don't include a checked bag"});
+      if(c.seats_available) ex.push({key:"seats",reason:"pick seats now so your party sits together"});
+      ex.push({key:"insurance",reason:"medical cover is worth it on international trips"});
+      return { reply:"Here's what I'd consider for this trip.", action:{ type:"suggest_extras", extras:ex } };
+    }
+    var m=" "+message.toLowerCase()+" ";
+    var hits=[]; FALLBACK.forEach(function(p){ var n=p.name.toLowerCase(), city=(p.city||"").toLowerCase(), code=p.iata_code.toLowerCase(); if((city&&m.indexOf(city)>-1)||m.indexOf(n)>-1||m.indexOf(" "+code+" ")>-1) hits.push(p.iata_code); });
+    var origin=hits[0], destination=hits[1];
+    var cabin=/first/.test(m)?"first":(/business/.test(m)?"business":(/premium/.test(m)?"premium_economy":"economy"));
+    var adults=(m.match(/(\d+)\s*(adult|of us|people|passenger|trave'?ll?er)/)||[])[1];
+    if(/\bfamily\b/.test(m)) adults=adults||"2";
+    var oneway=/one[\s-]?way/.test(m);
+    var dep=parseLooseDate(m), ret=null;
+    if(!oneway && dep){ var d=new Date(dep); d.setDate(d.getDate()+7); ret=d.toISOString().slice(0,10); }
+    if(!origin||!destination) return { reply:"Tell me two cities and rough dates — e.g. “Lisbon to Marrakesh in October, 2 adults.”", action:{type:"none"} };
+    var s={ origin:origin, destination:destination, adults:Number(adults||1), children_ages:[], cabin_class:cabin };
+    if(dep) s.departure_date=dep; if(ret) s.return_date=ret;
+    return { reply:"On it — searching "+origin+" → "+destination+(dep?" around "+dep:"")+".", action:{ type:"search", search:s } };
+  }
+  function parseLooseDate(m){
+    var months=["january","february","march","april","may","june","july","august","september","october","november","december"];
+    var now=new Date(), yr=now.getFullYear();
+    for(var i=0;i<12;i++){ if(m.indexOf(months[i])>-1){ var d=new Date(yr,i,8); if(d<now) d=new Date(yr+1,i,8); return d.toISOString().slice(0,10); } }
+    if(/next month/.test(m)){ return new Date(now.getFullYear(),now.getMonth()+1,8).toISOString().slice(0,10); }
+    if(/next week/.test(m)){ var d3=new Date(now); d3.setDate(d3.getDate()+7); return d3.toISOString().slice(0,10); }
+    return null;
+  }
+
+  /* -------------------- misc -------------------- */
+  var menuBtn=$("#menuBtn"), mm=$("#mobileMenu");
+  menuBtn.addEventListener("click", function(){ var o=mm.classList.toggle("open"); menuBtn.textContent=o?"✕":"☰"; });
+  mm.querySelectorAll("a").forEach(function(a){ a.addEventListener("click", function(){ mm.classList.remove("open"); menuBtn.textContent="☰"; }); });
+
+  var toastEl=$("#toast"), toastMsg=$("#toastMsg"), tT;
+  function toast(m){ toastMsg.textContent=m; toastEl.classList.add("show"); clearTimeout(tT); tT=setTimeout(function(){toastEl.classList.remove("show");},2800); }
+  window.addEventListener("keydown", function(e){ if(e.key==="Escape") closeModal(); });
+})();
+</script>
+<script src="/assets/site.js"></script>
+<script src="/assets/auth.js"></script>
+</body>
+</html>

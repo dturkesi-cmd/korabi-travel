@@ -1,0 +1,26 @@
+{
+  "name": "korabi-travel",
+  "version": "2.5.0",
+  "description": "Korabi Travel — flight search, booking, marketplace, and admin desk",
+  "main": "src/server.js",
+  "scripts": {
+    "start": "node src/server.js",
+    "dev": "node --watch src/server.js",
+    "smoke": "node scripts/smoke-api.js",
+    "test": "node --test $(ls test/*.test.js | grep -v api.integration.test.js)",
+    "test:integration": "node --test test/api.integration.test.js",
+    "test:all": "npm test && npm run test:integration"
+  },
+  "optionalDependencies": {
+    "pg": "^8.13.1"
+  },
+  "engines": {
+    "node": ">=18.16.0"
+  },
+  "dependencies": {
+    "@duffel/api": "^4.12.2",
+    "bcryptjs": "^2.4.3",
+    "dotenv": "^16.4.7",
+    "express": "^4.21.2"
+  }
+}

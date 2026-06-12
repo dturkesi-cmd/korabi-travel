@@ -1,0 +1,67 @@
+/* Shared Korabi UI components (extracted from index + subpages) */
+
+/* origin ↔ destination swap */
+.swap-btn{
+  align-self:center;width:36px;height:36px;border-radius:50%;
+  border:1.5px solid var(--line);display:flex;align-items:center;justify-content:center;
+  font-size:1rem;color:var(--ink-soft);background:var(--card);
+  transition:border-color .15s,transform .2s,background .15s;margin-top:14px;
+}
+.swap-btn:hover{border-color:var(--coral);color:var(--coral-deep);transform:rotate(180deg);background:#fff;}
+
+/* trust indicators */
+.trust-bar{display:flex;flex-wrap:wrap;gap:16px 24px;margin-top:26px;}
+.trust-item{display:flex;align-items:center;gap:10px;font-size:.84rem;color:var(--ink-soft);}
+.trust-item .ic{
+  width:34px;height:34px;border-radius:9px;background:var(--card);border:1px solid var(--line);
+  display:flex;align-items:center;justify-content:center;flex:none;
+}
+.trust-item b{display:block;color:var(--ink);font-size:.88rem;line-height:1.2;}
+
+/* scroll reveal */
+.reveal{opacity:0;transform:translateY(16px);transition:opacity .55s ease,transform .55s ease;}
+.reveal.visible{opacity:1;transform:none;}
+
+/* deal / listing tiles */
+.deal-card{
+  display:block;background:var(--card);border:1px solid var(--line);border-radius:16px;
+  padding:18px;color:inherit;transition:transform .18s,box-shadow .18s;
+}
+.deal-card:hover{transform:translateY(-4px);box-shadow:0 20px 36px -24px var(--shadow);}
+.deal-card .save{
+  display:inline-block;font-family:var(--mono);font-size:.68rem;background:#FBE9E4;
+  color:var(--coral-deep);padding:2px 8px;border-radius:999px;margin-left:6px;
+}
+
+/* scroll-to-top (index) */
+.scroll-top{
+  position:fixed;right:22px;bottom:88px;z-index:140;
+  width:40px;height:40px;border-radius:50%;
+  border:1.5px solid var(--line);background:rgba(255,253,250,.92);
+  backdrop-filter:blur(8px);color:var(--ink-soft);font-size:1.1rem;line-height:1;
+  box-shadow:0 8px 20px -10px var(--shadow);
+  opacity:0;visibility:hidden;transform:translateY(8px);
+  transition:opacity .2s,visibility .2s,transform .2s,border-color .15s,color .15s;
+}
+.scroll-top.visible{opacity:1;visibility:visible;transform:none;}
+.scroll-top:hover{border-color:var(--coral);color:var(--coral-deep);}
+
+@media (max-width:900px){ .swap-btn{display:none;} }
+
+@media (prefers-reduced-motion:reduce){
+  .reveal{opacity:1;transform:none;transition:none;}
+  .scroll-top{transition:none;}
+}
+
+/* footer admin link (index + subpages) */
+footer .admin-only{display:none;}
+footer .admin-only.visible{display:block;}
+.site-footer .admin-only{display:none;}
+.site-footer .admin-only.visible{display:block;}
+
+/* checkout payment step */
+.pay-box{margin-top:14px;padding:14px;border:1px solid var(--line);border-radius:14px;background:var(--card);}
+.pay-note{font-size:.84rem;color:var(--ink-soft);margin:0 0 10px;}
+.pay-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;}
+@media(max-width:640px){.pay-grid{grid-template-columns:1fr;}}
+.duffel-pay-mount{min-height:48px;}

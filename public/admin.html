@@ -1,0 +1,225 @@
+<!doctype html><html lang="en"><head>
+<meta charset="utf-8"/><meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>Admin — Korabi Travel</title>
+<link rel="icon" href="/assets/korabi-mark.svg">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,700;12..96,800&family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/assets/theme.css">
+</head><body>
+<header class="nav"><div class="wrap nav-inner"><a class="brand" href="/"><img class="mark" src="/assets/korabi-mark.svg" alt=""> korabi</a><div class="nav-right"><a href="/" class="muted" style="font-size:.92rem">Search</a><a href="/marketplace" class="muted" style="font-size:.92rem">Marketplace</a><a href="/api/openapi.json" class="muted" style="font-size:.75rem" target="_blank" rel="noopener">API reference</a><span class="auth-slot" id="authSlot"></span></div></div></header>
+<div class="page-hero"><div class="wrap">
+  <p class="eyebrow">Operations</p>
+  <h1>Admin desk</h1>
+  <p>Bookings, escrow ledger, ARC transfers, change requests, and exports.</p>
+</div></div>
+<main class="wrap" style="padding-bottom:60px;">
+  <div id="body"><p class="muted">Loading…</p></div>
+</main>
+<script src="/assets/auth.js"></script>
+<script src="/assets/site.js"></script>
+<script>
+(function(){
+  function money(a,c){ try{ return new Intl.NumberFormat(undefined,{style:"currency",currency:c||"USD",maximumFractionDigits:0}).format(Number(a)); }catch(e){ return (c||"$")+a; } }
+  fetch("/api/admin/overview").then(function(r){
+    if(r.status===401){ location.href="/login?next=/admin"; return null; }
+    return r.json().then(function(j){ return {status:r.status, j:j}; });
+  }).then(function(res){
+    if(!res) return;
+    var body=document.getElementById("body");
+    if(res.status===403){ body.innerHTML='<div class="card" style="padding:40px;text-align:center;"><p class="muted">This area is for admins only.</p></div>'; return; }
+    var j=res.j;
+    var stats='<div class="stat-grid" style="margin-bottom:24px;">'+
+      '<div class="stat"><div class="n">'+j.stats.users+'</div><div class="l">Registered users</div></div>'+
+      '<div class="stat"><div class="n">'+j.stats.bookings+'</div><div class="l">Total bookings</div></div>'+
+      '<div class="stat"><div class="n">'+j.recent_events.length+'</div><div class="l">Recent webhook events</div></div>'+
+      '<div class="stat"><div class="n">'+(j.stats.pending_transfers||0)+'</div><div class="l">Transfers awaiting ARC desk</div></div>'+
+      '<div class="stat"><div class="n">'+((j.open_requests||[]).length)+'</div><div class="l">Open change requests</div></div></div>';
+    var bk='<div class="card" style="padding:6px 0 0;margin-bottom:24px;"><h3 style="font-size:1.1rem;padding:14px 16px;">Recent bookings</h3>'+
+      (j.recent_bookings.length?'<table><thead><tr><th>Route</th><th>Ref</th><th>Total</th><th>Status</th><th>When</th></tr></thead><tbody>'+
+      j.recent_bookings.map(function(b){ return '<tr><td>'+(b.route||"—")+'</td><td style="font-family:var(--mono)">'+(b.reference||"—")+'</td><td>'+money(b.total_amount,b.total_currency)+'</td><td>'+(b.status||"")+'</td><td class="muted">'+new Date(b.created_at).toLocaleString()+'</td></tr>'; }).join("")+'</tbody></table>':'<p class="muted" style="padding:0 16px 16px;">No bookings yet.</p>')+'</div>';
+    var sup=(j.suppliers||[]).length?'<div class="card" style="padding:6px 0 0;margin-bottom:24px;"><h3 style="font-size:1.1rem;padding:14px 16px;">Suppliers</h3><table><thead><tr><th>Source</th><th>Kind</th><th>Status</th></tr></thead><tbody>'+j.suppliers.map(function(x){return '<tr><td>'+x.label+'</td><td>'+x.kind+'</td><td>'+(x.enabled?'<span class=\'tag ok\'>enabled</span>':'<span class=\'tag\'>off</span>')+'</td></tr>';}).join('')+'</tbody></table></div>':'';
+    var ev='<div class="card" style="padding:6px 0 0;"><h3 style="font-size:1.1rem;padding:14px 16px;">Webhook events</h3>'+
+      (j.recent_events.length?'<table><thead><tr><th>Type</th><th>ID</th><th>Mode</th><th>Received</th></tr></thead><tbody>'+
+      j.recent_events.map(function(e){ return '<tr><td>'+(e.type||"—")+'</td><td style="font-family:var(--mono)">'+(e.id||"—")+'</td><td>'+(e.live_mode?"live":"test")+'</td><td class="muted">'+new Date(e.received_at).toLocaleString()+'</td></tr>'; }).join("")+'</tbody></table>':'<p class="muted" style="padding:0 16px 16px;">No events yet — trigger a ping from Duffel.</p>')+'</div>';
+    var pay=j.payments?'<div class="card" style="padding:6px 0 0;margin-bottom:24px;"><h3 style="font-size:1.1rem;padding:14px 16px;">Escrow ledger <span class="tag" style="margin-left:6px;">'+j.payments.provider+' provider</span></h3><div class="stat-grid" style="padding:0 16px 18px;">'+
+      '<div class="stat"><div class="n">'+j.payments.held_amount+'</div><div class="l">Held in escrow ('+j.payments.held_count+')</div></div>'+
+      '<div class="stat"><div class="n">'+j.payments.payouts_sent+'</div><div class="l">Payouts released</div></div>'+
+      '<div class="stat"><div class="n">'+j.payments.commission_earned+'</div><div class="l">Commission earned</div></div>'+
+      '<div class="stat"><div class="n">'+j.payments.refunded_amount+'</div><div class="l">Refunded</div></div></div></div>':'';
+    var uv=(j.unverified_listings&&j.unverified_listings.length)?'<div class="card" style="padding:6px 0 0;margin-bottom:24px;"><h3 style="font-size:1.1rem;padding:14px 16px;">Listings awaiting verification</h3>'+j.unverified_listings.map(function(u){
+      return '<div style="padding:12px 16px;border-bottom:1px solid var(--line);display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;"><div><b>'+u.route+'</b> · '+u.airline.name+' · departs '+new Date(u.departing_at).toLocaleString()+'<div class="muted" style="font-size:.85rem;">PNR <span style="font-family:var(--mono)">'+u.pnr+'</span> · source: '+u.source+'</div></div>'+
+      '<button class="btn btn-primary" style="padding:8px 16px;font-size:.85rem;" data-verify="'+u.id+'">PNR checked — verify</button></div>';
+    }).join("")+'</div>':'';
+    var rep='<div class="card" style="padding:18px 20px;margin-bottom:24px;"><h3 style="font-size:1.1rem;margin-bottom:12px;">Reports &amp; exports</h3>'+
+      '<div style="display:flex;gap:10px;flex-wrap:wrap;align-items:end;">'+
+      '<div class="field" style="margin:0;"><label>From</label><input type="date" id="repFrom"></div>'+
+      '<div class="field" style="margin:0;"><label>To</label><input type="date" id="repTo"></div>'+
+      '<button class="btn btn-ink" id="repRun" style="padding:10px 18px;">Run report</button></div>'+
+      '<div class="csv-row">'+
+      '<span class="csv-label">Download CSV (uses date range above)</span>'+
+      '<a class="csv-link" id="csvB" href="/api/admin/reports/export?kind=bookings"><span>Bookings</span><span class="dl">↓ CSV</span></a>'+
+      '<a class="csv-link" id="csvM" href="/api/admin/reports/export?kind=marketplace"><span>Marketplace</span><span class="dl">↓ CSV</span></a>'+
+      '<a class="csv-link" id="csvL" href="/api/admin/reports/export?kind=ledger"><span>Escrow ledger</span><span class="dl">↓ CSV</span></a></div>'+
+      '<div id="repOut" style="margin-top:14px;"></div>'+
+      '<p class="muted" style="font-size:.75rem;margin-top:10px;">Summary totals sum across currencies numerically for a quick read — use the CSVs (per-row currency) for ARC reconciliation.</p></div>';
+    var cr=(j.open_requests&&j.open_requests.length)?'<div class="card" style="padding:6px 0 0;margin-bottom:24px;"><h3 style="font-size:1.1rem;padding:14px 16px;">Change requests</h3>'+j.open_requests.map(function(q){
+      return '<div style="padding:12px 16px;border-bottom:1px solid var(--line);"><b>'+(q.route||'Trip')+'</b> · ref '+(q.reference||'—')+' · '+(q.user?q.user.name+' ('+q.user.email+')':'—')+
+      '<div class="muted" style="font-size:.85rem;margin-top:4px;">“'+q.note+'”</div>'+
+      '<button class="btn btn-primary" style="padding:8px 16px;font-size:.85rem;margin-top:8px;" data-resolve="'+q.id+'">Resolve &amp; notify traveler</button></div>';
+    }).join("")+'</div>':'';
+    var tq='<div class="card" style="padding:6px 0 0;margin-bottom:24px;"><div style="display:flex;justify-content:space-between;align-items:center;padding:14px 16px 0;gap:12px;flex-wrap:wrap;"><h3 style="font-size:1.1rem;margin:0;">ARC transfer desk</h3><button class="btn btn-ghost" id="tqRefresh" style="padding:8px 14px;font-size:.82rem;">↻ Refresh queue</button></div><div id="tq"><p class="muted" style="padding:0 16px 16px;">Loading…</p></div></div>';
+    var sq='<div class="card" style="padding:6px 0 0;margin-bottom:24px;"><div style="display:flex;justify-content:space-between;align-items:center;padding:14px 16px 0;gap:12px;flex-wrap:wrap;"><h3 style="font-size:1.1rem;margin:0;">R09 settlement queue</h3><button class="btn btn-ghost" id="sqRefresh" style="padding:8px 14px;font-size:.82rem;">↻ Refresh</button></div>'+
+      '<div style="padding:8px 16px 12px;display:flex;gap:8px;flex-wrap:wrap;align-items:end;"><div class="field" style="margin:0;flex:1;min-width:140px;"><label>PNR lookup</label><input id="pnrLookup" placeholder="ABC123" style="font-family:var(--mono);text-transform:uppercase;"></div>'+
+      '<button class="btn btn-ink" id="pnrBtn" style="padding:10px 16px;">Look up</button></div>'+
+      '<div id="pnrOut" style="padding:0 16px 12px;"></div><div id="sq"><p class="muted" style="padding:0 16px 16px;">Loading settlements…</p></div></div>';
+    body.innerHTML=stats+rep+cr+pay+sq+uv+tq+sup+bk+ev;
+    (function(){
+      function isoDate(d){ return d.toISOString().slice(0,10); }
+      function setDefaultRange(){
+        var to=new Date(), from=new Date();
+        from.setDate(from.getDate()-30);
+        document.getElementById("repFrom").value=isoDate(from);
+        document.getElementById("repTo").value=isoDate(to);
+      }
+      function repQs(){
+        var f=document.getElementById("repFrom").value, t=document.getElementById("repTo").value;
+        var q=[]; if(f) q.push("from="+encodeURIComponent(f)); if(t) q.push("to="+encodeURIComponent(t));
+        return q.join("&");
+      }
+      function syncCsvLinks(){
+        var qs=repQs();
+        [["csvB","bookings"],["csvM","marketplace"],["csvL","ledger"]].forEach(function(x){
+          document.getElementById(x[0]).href="/api/admin/reports/export?kind="+x[1]+(qs?"&"+qs:"");
+        });
+      }
+      function runSummary(){
+        var qs=repQs(), out=document.getElementById("repOut");
+        out.innerHTML='<p class="muted" style="font-size:.88rem;">Running report…</p>';
+        syncCsvLinks();
+        fetch("/api/admin/reports/summary"+(qs?"?"+qs:"")).then(function(r){
+          if(!r.ok) throw new Error("Report failed");
+          return r.json();
+        }).then(function(sm){
+          out.innerHTML='<div class="stat-grid">'+
+            '<div class="stat"><div class="n">'+sm.bookings.count+'</div><div class="l">Bookings · gross '+sm.bookings.gross+' · '+sm.bookings.cancelled+' cancelled</div></div>'+
+            '<div class="stat"><div class="n">'+sm.marketplace.sold+'</div><div class="l">Seats sold · GMV '+sm.marketplace.gmv+'</div></div>'+
+            '<div class="stat"><div class="n">'+sm.marketplace.commission+'</div><div class="l">Commission earned</div></div>'+
+            '<div class="stat"><div class="n">'+sm.marketplace.escrow_held+'</div><div class="l">In escrow now</div></div></div>';
+        }).catch(function(){
+          out.innerHTML='<p class="err" style="font-size:.88rem;">Could not load summary — check dates and try again.</p>';
+        });
+      }
+      setDefaultRange();
+      syncCsvLinks();
+      runSummary();
+      document.getElementById("repRun").addEventListener("click",runSummary);
+      document.getElementById("repFrom").addEventListener("change",syncCsvLinks);
+      document.getElementById("repTo").addEventListener("change",syncCsvLinks);
+    })();
+    document.querySelectorAll("[data-resolve]").forEach(function(b){ b.addEventListener("click",function(){
+      var note=prompt("Resolution (sent to the traveler):","Rebooked as requested; fare difference collected.");
+      if(note===null) return;
+      window.korabiFetch("/api/admin/requests/"+b.getAttribute("data-resolve")+"/resolve",{method:"POST",body:JSON.stringify({resolution:note})}).then(function(){ location.reload(); });
+    });});
+    document.querySelectorAll("[data-verify]").forEach(function(b){ b.addEventListener("click",function(){
+      window.korabiFetch("/api/admin/listings/"+b.getAttribute("data-verify")+"/verify",{method:"POST"}).then(function(){ location.reload(); });
+    });});
+    function loadTransfers(){
+      var el=document.getElementById("tq");
+      if(!el) return;
+      el.innerHTML='<p class="muted" style="padding:0 16px 16px;">Loading transfers…</p>';
+      fetch("/api/admin/transfers").then(function(r){return r.json();}).then(function(t){
+        var items=(t&&t.transfers)||[];
+        if(!items.length){ el.innerHTML='<p class="muted" style="padding:0 16px 16px;">No transfers pending. Buyer purchases will queue here for the airline name change.</p>'; return; }
+        el.innerHTML=items.map(function(x){
+          return '<div style="padding:14px 16px;border-bottom:1px solid var(--line);">'+
+            '<b>'+x.origin+' → '+x.destination+'</b> · '+x.airline.name+' · departs '+new Date(x.departing_at).toLocaleString()+
+            '<div class="muted" style="font-size:.85rem;margin-top:4px;">PNR <span style="font-family:var(--mono)">'+x.pnr+'</span>'+(x.eticket?' · tkt '+x.eticket:'')+' · fee: '+(x.transfer_fee_note||'per fare rules')+(x.policy_verify?' · <b>verify current fare rules</b>':'')+'</div>'+
+            '<div class="muted" style="font-size:.85rem;">Seller: '+(x.seller?x.seller.name+' ('+x.seller.email+')':'—')+' · Buyer: '+(x.buyer?x.buyer.name+' ('+x.buyer.email+')':'—')+(x.buyer_passenger?' · re-issue to <b>'+x.buyer_passenger.given_name+' '+x.buyer_passenger.family_name+'</b>':'')+'</div>'+
+            '<div class="muted" style="font-size:.85rem;">Escrow held '+x.escrow.amount+' '+x.currency+' · payout '+x.escrow.payout+' after commission</div>'+
+            '<div style="margin-top:8px;display:flex;gap:8px;flex-wrap:wrap;">'+
+            '<input placeholder="New e-ticket #" style="border:1px solid var(--line);border-radius:9px;padding:8px 10px;font-size:.85rem;" id="tk_'+x.id+'">'+
+            '<button class="btn btn-primary" style="padding:8px 16px;font-size:.85rem;" data-done="'+x.id+'">Name change done — release payout</button>'+
+            '<button class="btn btn-ghost" style="padding:8px 16px;font-size:.85rem;" data-fail="'+x.id+'">Failed — refund buyer</button></div></div>';
+        }).join("");
+        el.querySelectorAll("[data-done]").forEach(function(b){ b.addEventListener("click",function(){
+          window.korabiFetch("/api/admin/transfers/"+b.getAttribute("data-done")+"/complete",{method:"POST",body:JSON.stringify({new_eticket:(document.getElementById("tk_"+b.getAttribute("data-done"))||{}).value||null})}).then(function(){ loadTransfers(); if(window.korabiToast) window.korabiToast("Transfer completed — payout released."); });
+        });});
+        el.querySelectorAll("[data-fail]").forEach(function(b){ b.addEventListener("click",function(){
+          var reason=prompt("Reason (shown to buyer):","Airline could not complete the name change.");
+          if(reason===null) return;
+          window.korabiFetch("/api/admin/transfers/"+b.getAttribute("data-fail")+"/fail",{method:"POST",body:JSON.stringify({reason:reason})}).then(function(){ loadTransfers(); if(window.korabiToast) window.korabiToast("Transfer failed — buyer refunded."); });
+        });});
+      }).catch(function(){
+        el.innerHTML='<div style="padding:16px;"><p class="err" style="font-size:.88rem;margin-bottom:10px;">Could not load transfer queue.</p><button class="btn btn-ghost" id="tqRetry" style="padding:8px 14px;font-size:.82rem;">Try again</button></div>';
+        var rt=document.getElementById("tqRetry"); if(rt) rt.addEventListener("click",loadTransfers);
+      });
+    }
+    loadTransfers();
+    var tqRefresh=document.getElementById("tqRefresh");
+    if(tqRefresh) tqRefresh.addEventListener("click",function(){
+      loadTransfers();
+      if(window.korabiToast) window.korabiToast("Transfer queue refreshed.");
+    });
+    function loadSettlements(){
+      var el=document.getElementById("sq");
+      if(!el) return;
+      el.innerHTML='<p class="muted" style="padding:0 16px 16px;">Loading…</p>';
+      fetch("/api/admin/settlements").then(function(r){return r.json();}).then(function(j){
+        var items=(j&&j.settlements)||[];
+        var mode=(j.rail&&j.rail.mode)||"—";
+        var ck=j.checkout_mode||"korabi";
+        if(!items.length){
+          el.innerHTML='<p class="muted" style="padding:0 16px 16px;">No R09 settlements yet — book a flight to see FedNow receipts here.</p>'+
+            '<p class="muted" style="padding:0 16px 16px;font-size:.82rem;">Rail: '+mode+' · checkout: '+ck+'</p>';
+          return;
+        }
+        el.innerHTML='<p class="muted" style="padding:0 16px 12px;font-size:.82rem;">Rail: '+mode+' · checkout: '+ck+' · '+items.length+' recent</p>'+
+          items.map(function(s){
+            var refTag=s.settlement_refund&&s.settlement_refund.ok?'<span class="tag warn">refund queued</span>':'';
+            return '<div style="padding:12px 16px;border-bottom:1px solid var(--line);">'+
+              '<b>'+(s.route||"—")+'</b> · ref <span style="font-family:var(--mono)">'+(s.reference||"—")+'</span> '+refTag+
+              '<div class="muted" style="font-size:.85rem;margin-top:4px;">Settlement <span style="font-family:var(--mono)">'+(s.settlement_id||"—")+'</span> · '+(s.settlement_path||"")+' · PNR hash '+s.pnr_hash+'</div>'+
+              '<div class="muted" style="font-size:.85rem;">'+money(s.total_amount,s.total_currency)+' · '+(s.status||"")+' · '+new Date(s.created_at).toLocaleString()+'</div></div>';
+          }).join("");
+      }).catch(function(){
+        el.innerHTML='<p class="err" style="padding:16px;font-size:.88rem;">Could not load settlement queue.</p>';
+      });
+    }
+    loadSettlements();
+    var sqRefresh=document.getElementById("sqRefresh");
+    if(sqRefresh) sqRefresh.addEventListener("click",loadSettlements);
+    var pnrBtn=document.getElementById("pnrBtn");
+    if(pnrBtn) pnrBtn.addEventListener("click",function(){
+      var loc=(document.getElementById("pnrLookup")||{}).value||"";
+      if(!loc.trim()) return;
+      var out=document.getElementById("pnrOut");
+      out.innerHTML='<p class="muted" style="font-size:.88rem;">Looking up…</p>';
+      fetch("/api/admin/settlements/pnr/"+encodeURIComponent(loc.trim().toUpperCase())).then(function(r){return r.json();}).then(function(j){
+        var html='<div class="quote" style="margin:0;"><span style="font-family:var(--mono);font-size:.85rem;">PNR hash: '+j.pnrHash+'</span></div>';
+        if(j.bookings&&j.bookings.length){
+          html+='<p style="font-size:.88rem;margin-top:8px;"><b>Korabi bookings ('+j.bookings.length+')</b></p>'+
+            j.bookings.map(function(b){
+              return '<div class="muted" style="font-size:.85rem;">'+b.route+' · '+b.reference+' · '+(b.settlement_id||"no settlement")+' · '+b.status+'</div>';
+            }).join("");
+        } else {
+          html+='<p class="muted" style="font-size:.88rem;margin-top:8px;">No local bookings for this locator.</p>';
+        }
+        if(j.remote){
+          html+='<p style="font-size:.88rem;margin-top:8px;"><b>Shteg gateway</b>: '+(j.remote.status||j.remote.error||"response received")+'</p>';
+          if(j.remote.settlements&&j.remote.settlements.length){
+            html+=j.remote.settlements.map(function(s){
+              return '<div class="muted" style="font-size:.85rem;">'+s.settlementId+' · '+s.route+' · '+s.txSts+'</div>';
+            }).join("");
+          }
+        } else if(j.rail&&!j.rail.bearer_configured){
+          html+='<p class="muted" style="font-size:.82rem;margin-top:8px;">Wire SHTEG_API_BASE_URL + bearer for remote PNR history.</p>';
+        }
+        out.innerHTML=html;
+      }).catch(function(){ out.innerHTML='<p class="err" style="font-size:.88rem;">Lookup failed.</p>'; });
+    });
+  });
+})();
+</script>
+<div id="korabiFooter"></div>
+</body></html>

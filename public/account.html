@@ -1,0 +1,222 @@
+<!doctype html><html lang="en"><head>
+<meta charset="utf-8"/><meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>My trips — Korabi Travel</title>
+<meta name="description" content="Manage bookings, Korabi Cash, cancellations, marketplace listings, and seller payouts."/>
+<meta name="theme-color" content="#FFF7EE"/>
+<link rel="icon" href="/assets/korabi-mark.svg">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,700;12..96,800&family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/assets/theme.css">
+<link rel="stylesheet" href="/assets/korabi.css">
+<style>
+.bk{padding:20px 22px;margin-bottom:14px;display:flex;justify-content:space-between;align-items:center;gap:16px;flex-wrap:wrap;}
+.bk .rt{font-family:var(--display);font-weight:700;font-size:1.2rem;}
+.bk .acts{display:flex;gap:8px;margin-top:8px;flex-wrap:wrap;}
+.bk .acts button{padding:7px 14px;font-size:.84rem;}
+.modal-bg{position:fixed;inset:0;background:rgba(42,32,24,.45);display:none;align-items:center;justify-content:center;z-index:60;padding:18px;}
+.modal-bg.open{display:flex;}
+.modal{background:var(--card);border-radius:20px;max-width:460px;width:100%;padding:26px;}
+.quote{background:#E7F6F2;border-radius:12px;padding:14px;margin:14px 0;font-size:.95rem;}
+.quote b{font-family:var(--display);font-size:1.4rem;display:block;}
+.notice{font-size:.8rem;color:var(--ink-soft);margin-top:10px;line-height:1.5;}
+textarea{border:1px solid var(--line);border-radius:11px;padding:12px 14px;font-family:var(--body);font-size:.95rem;background:var(--paper);width:100%;min-height:90px;resize:vertical;}
+.reqrow{font-size:.86rem;padding:10px 0;border-bottom:1px solid var(--line);}
+</style>
+</head><body>
+<header class="nav"><div class="wrap nav-inner"><a class="brand" href="/"><img class="mark" src="/assets/korabi-mark.svg" alt=""> korabi</a>
+<div class="nav-right"><a href="/" class="muted" style="font-size:.92rem">Search flights</a><a href="/marketplace" class="muted" style="font-size:.92rem">Marketplace</a><span class="auth-slot" id="authSlot"></span></div></div></header>
+
+<div class="page-hero"><div class="wrap">
+  <p class="eyebrow">Your account</p>
+  <h1>My trips</h1>
+  <p>Bookings, Korabi Cash, cancellations, and seller payouts — all in one place.</p>
+</div></div>
+
+<main class="wrap" style="padding-bottom:60px;">
+  <div id="balance" style="margin-bottom:22px;"></div>
+  <div id="list"><p class="muted">Loading…</p></div>
+  <div id="mktWrap" style="display:none;margin-top:30px;" class="reveal">
+    <h3 style="font-size:1.15rem;margin-bottom:10px;">Seat marketplace</h3>
+    <div class="card" style="padding:6px 18px;" id="mktList"></div>
+    <a href="/marketplace" class="btn btn-ghost" style="margin-top:12px;padding:9px 16px;font-size:.88rem;">Browse or list seats →</a>
+  </div>
+  <div id="reqsWrap" style="display:none;margin-top:30px;"><h3 style="font-size:1.15rem;margin-bottom:10px;">Change requests</h3><div class="card" style="padding:6px 18px;" id="reqs"></div></div>
+  <div id="payoutWrap" style="margin-top:30px;">
+    <h3 style="font-size:1.15rem;margin-bottom:10px;">Seller payouts</h3>
+    <div class="card" style="padding:20px 22px;" id="payoutCard"><p class="muted">Loading…</p></div>
+  </div>
+</main>
+
+<div class="modal-bg" id="cxBg"><div class="modal">
+  <h3 style="font-size:1.25rem;" id="cxTitle">Cancel this trip?</h3>
+  <div id="cxBody"><p class="muted" style="font-size:.92rem;margin-top:8px;">Checking the refund with the airline…</p></div>
+  <div class="err" id="cxErr"></div>
+  <button id="cxConfirm" class="btn btn-primary" style="width:100%;display:none;">Confirm cancellation</button>
+  <button id="cxClose" class="btn btn-ghost" style="width:100%;margin-top:8px;">Keep my trip</button>
+</div></div>
+
+<div class="modal-bg" id="chBg"><div class="modal">
+  <h3 style="font-size:1.25rem;">Request a change</h3>
+  <p class="muted" style="font-size:.9rem;margin:8px 0 12px;">Flight changes depend on the fare's rules, so our ARC desk confirms options and any fare difference before anything is ticketed.</p>
+  <textarea id="chNote" placeholder="e.g. Move the return flight to Sunday evening, aisle seat if possible."></textarea>
+  <div class="err" id="chErr"></div>
+  <button id="chSend" class="btn btn-primary" style="width:100%;margin-top:10px;">Send to the desk</button>
+  <button id="chClose" class="btn btn-ghost" style="width:100%;margin-top:8px;">Never mind</button>
+</div></div>
+
+<script src="/assets/auth.js"></script>
+<script src="/assets/site.js"></script>
+<script>
+(function(){
+  var $=function(s){return document.querySelector(s);};
+  function money(a,c){ try{ return new Intl.NumberFormat(undefined,{style:"currency",currency:c||"USD",maximumFractionDigits:0}).format(Number(a)); }catch(e){ return (c||"$")+a; } }
+  function statusTag(s){ var map={confirmed:["ok","Confirmed"],updated:["ok","Updated"],schedule_change:["warn","Schedule change"],cancelled:["","Cancelled"]}; var m=map[s]||["",s||"—"]; return '<span class="tag '+m[0]+'">'+m[1]+'</span>'; }
+  var current=null;
+
+  function load(){
+    fetch("/api/account/bookings").then(function(r){
+      if(r.status===401){ location.href="/login?next=/account"; return null; }
+      return r.json();
+    }).then(function(j){
+      if(!j) return;
+      var bal=$("#balance");
+      if((j.korabi_cash||0)>0) bal.innerHTML='<div class="stat" style="display:inline-block;min-width:220px;"><div class="n">$'+(j.korabi_cash||0)+'</div><div class="l">Korabi Cash balance</div></div>';
+      var list=$("#list");
+      if(!j.bookings.length){
+        list.innerHTML='<div class="card" style="padding:40px;text-align:center;"><p class="muted" style="margin-bottom:16px;">No trips yet — your bookings will show up here.</p><a href="/" class="btn btn-primary">Find a flight</a></div>';
+      } else {
+        list.innerHTML=j.bookings.map(function(b){
+          var refund=b.refund?'<div class="muted" style="font-size:.78rem;margin-top:4px;">Refund '+money(b.refund.amount,b.refund.currency)+'</div>':'';
+          var earned=(b.korabi_cash_earned||0)>0?'<div class="muted" style="font-size:.78rem;margin-top:4px;">+$'+b.korabi_cash_earned+' Korabi Cash</div>':'';
+          var acts=b.status!=="cancelled"
+            ? '<div class="acts"><button class="btn btn-ghost" data-cancel="'+b.id+'">Cancel trip</button><button class="btn btn-ghost" data-change="'+b.id+'">Request change</button></div>'
+            : '';
+          return '<div class="card bk"><div><div class="rt">'+(b.route||"Trip")+'</div>'+
+            '<div class="muted" style="font-size:.88rem;margin-top:3px;">'+(b.passenger_names||[]).join(", ")+'</div>'+
+            '<div style="font-family:var(--mono);font-size:.8rem;margin-top:6px;">Ref '+(b.reference||"—")+' · '+new Date(b.created_at).toLocaleDateString()+'</div>'+acts+'</div>'+
+            '<div style="text-align:right;"><div style="font-family:var(--display);font-weight:800;font-size:1.3rem;">'+money(b.total_amount,b.total_currency)+'</div>'+
+            '<div style="margin-top:6px;">'+statusTag(b.status)+'</div>'+refund+earned+'</div></div>';
+        }).join("");
+        list.querySelectorAll("[data-cancel]").forEach(function(b){ b.addEventListener("click",function(){ openCancel(b.getAttribute("data-cancel")); }); });
+        list.querySelectorAll("[data-change]").forEach(function(b){ b.addEventListener("click",function(){ openChange(b.getAttribute("data-change")); }); });
+      }
+    });
+    fetch("/api/account/requests").then(function(r){ return r.ok?r.json():null; }).then(function(j){
+      if(!j||!j.requests||!j.requests.length) return;
+      $("#reqsWrap").style.display="block";
+      $("#reqs").innerHTML=j.requests.map(function(x){
+        return '<div class="reqrow"><b>'+(x.route||"Trip")+'</b> · '+(x.status==="open"?'<span class="tag warn">With the desk</span>':'<span class="tag ok">Resolved</span>')+
+          '<div class="muted" style="margin-top:4px;">You: “'+x.note+'”</div>'+
+          (x.resolution?'<div style="margin-top:4px;">Desk: '+x.resolution+'</div>':'')+'</div>';
+      }).join("");
+    });
+    loadMarketplace();
+  }
+
+  function loadMarketplace(){
+    fetch("/api/marketplace/mine").then(function(r){ return r.ok?r.json():null; }).then(function(j){
+      if(!j) return;
+      var selling=(j.selling||[]).filter(function(l){ return l.status==="active"||l.status==="pending_transfer"; });
+      var buying=(j.buying||[]).filter(function(l){ return l.status!=="cancelled"; });
+      if(!selling.length&&!buying.length) return;
+      $("#mktWrap").style.display="block";
+      if (window.korabiObserveReveal) window.korabiObserveReveal($("#mktWrap"));
+      var html="";
+      selling.forEach(function(l){
+        html+='<div class="reqrow"><b>Selling · '+l.origin+' → '+l.destination+'</b> · '+money(l.asking_price,l.currency)+
+          ' · <span class="tag '+(l.status==="active"?"ok":"warn")+'">'+l.status.replace("_"," ")+'</span></div>';
+      });
+      buying.forEach(function(l){
+        html+='<div class="reqrow"><b>Buying · '+l.origin+' → '+l.destination+'</b> · '+money(l.asking_price,l.currency)+
+          ' · <span class="tag warn">'+l.status.replace("_"," ")+'</span></div>';
+      });
+      $("#mktList").innerHTML=html;
+    });
+  }
+
+  // cancel flow: quote → confirm
+  function openCancel(id){
+    current=id; $("#cxErr").textContent=""; $("#cxConfirm").style.display="none";
+    $("#cxBody").innerHTML='<p class="muted" style="font-size:.92rem;margin-top:8px;">Checking the refund with the airline…</p>';
+    $("#cxBg").classList.add("open");
+    window.korabiFetch("/api/account/bookings/"+id+"/cancel/quote",{method:"POST"})
+      .then(function(r){return r.json().then(function(j){ if(!r.ok) throw new Error(j.message||"Could not get a quote"); return j; });})
+      .then(function(j){
+        var q=j.quote;
+        $("#cxBody").innerHTML='<div class="quote">You\'d get back<b>'+money(q.refund_amount,q.refund_currency)+'</b>'+
+          (q.simulated?'<span class="tag warn" style="margin-top:6px;display:inline-block;">simulated — demo booking</span>':'')+'</div>'+
+          '<p class="notice">'+(q.note||"")+(q.expires_at?' Quote valid until '+new Date(q.expires_at).toLocaleTimeString()+'.':'')+'</p>';
+        $("#cxConfirm").style.display="block";
+      })
+      .catch(function(e){ $("#cxBody").innerHTML=""; $("#cxErr").textContent=e.message; });
+  }
+  $("#cxConfirm").addEventListener("click",function(){
+    var btn=this; btn.disabled=true; btn.textContent="Cancelling…";
+    window.korabiFetch("/api/account/bookings/"+current+"/cancel/confirm",{method:"POST"})
+      .then(function(r){return r.json().then(function(j){ if(!r.ok) throw new Error(j.message||"Cancellation failed"); return j; });})
+      .then(function(j){
+        $("#cxBg").classList.remove("open"); btn.disabled=false; btn.textContent="Confirm cancellation";
+        var refund=j.booking&&j.booking.refund;
+        var msg="Trip cancelled";
+        if(refund && refund.amount) msg+=" — refund "+money(refund.amount,refund.currency)+" on the way";
+        var sr=j.settlement_refund;
+        if(sr&&sr.ok&&sr.path!=="skipped") msg+= sr.path.includes("SANDBOX")?" · FedNow return queued (sandbox)":" · instant FedNow return queued";
+        if(window.korabiToast) window.korabiToast(msg); else alert(msg);
+        load();
+      })
+      .catch(function(e){ $("#cxErr").textContent=e.message; btn.disabled=false; btn.textContent="Confirm cancellation"; });
+  });
+  $("#cxClose").addEventListener("click",function(){ $("#cxBg").classList.remove("open"); });
+
+  // change request
+  function openChange(id){ current=id; $("#chErr").textContent=""; $("#chNote").value=""; $("#chBg").classList.add("open"); }
+  $("#chSend").addEventListener("click",function(){
+    var note=$("#chNote").value.trim();
+    if(!note){ $("#chErr").textContent="Tell us what you'd like to change."; return; }
+    var btn=this; btn.disabled=true; btn.textContent="Sending…";
+    window.korabiFetch("/api/account/bookings/"+current+"/change-request",{method:"POST",body:JSON.stringify({note:note})})
+      .then(function(r){return r.json().then(function(j){ if(!r.ok) throw new Error(j.message||"Could not send"); return j; });})
+      .then(function(){
+        $("#chBg").classList.remove("open"); btn.disabled=false; btn.textContent="Send to the desk";
+        if(window.korabiToast) window.korabiToast("Change request sent — the desk will follow up.");
+        load();
+      })
+      .catch(function(e){ $("#chErr").textContent=e.message; btn.disabled=false; btn.textContent="Send to the desk"; });
+  });
+  $("#chClose").addEventListener("click",function(){ $("#chBg").classList.remove("open"); });
+
+  function loadPayouts(){
+    fetch("/api/account/payouts").then(function(r){ return r.ok?r.json():null; }).then(function(j){
+      if(!j) return;
+      var c=$("#payoutCard"), m=j.payout_method;
+      var mHtml = m ? '<div style="font-size:.92rem;">Payout method: <b>'+m.holder+'</b> · account ••••'+m.last4+
+        ' <button id="pmEdit" class="btn btn-ghost" style="padding:6px 12px;font-size:.8rem;margin-left:8px;">Change</button></div>' : '';
+      var form='<div id="pmForm" style="'+(m?'display:none;':'')+'margin-top:10px;">'+
+        '<div class="field"><label>Account holder</label><input id="pmHolder" placeholder="Sara Lopes"></div>'+
+        '<div class="field"><label>Bank account / IBAN</label><input id="pmAcct" placeholder="PT50 0002 0123 …"></div>'+
+        '<div class="err" id="pmErr"></div>'+
+        '<button id="pmSave" class="btn btn-primary" style="padding:9px 18px;">Save payout method</button>'+
+        '<p class="muted" style="font-size:.78rem;margin-top:8px;">We keep only the holder name and last 4 digits in this build — live payouts onboard through the payment provider (e.g. Stripe Connect), which handles your details and identity checks directly.</p></div>';
+      var hist = j.payouts.length
+        ? '<div style="margin-top:14px;"><div class="muted" style="font-size:.8rem;margin-bottom:6px;">'+j.payouts.length+' payout'+(j.payouts.length>1?'s':'')+' · total '+j.total_paid_label+(j.pending_label?' · '+j.pending_label+' in escrow':'')+'</div>'+
+          j.payouts.map(function(p){ return '<div class="reqrow">'+p.amount+' '+p.currency+' · '+new Date(p.released_at).toLocaleDateString()+'</div>'; }).join("")+'</div>'
+        : '<p class="muted" style="font-size:.85rem;margin-top:12px;">No payouts yet — when a seat you sell transfers, the payout lands here'+(j.pending_label?' ('+j.pending_label+' currently in escrow)':'')+'.</p>';
+      c.innerHTML=mHtml+form+hist;
+      var ed=document.getElementById("pmEdit"); if(ed) ed.addEventListener("click",function(){ document.getElementById("pmForm").style.display="block"; });
+      document.getElementById("pmSave").addEventListener("click",function(){
+        var h=document.getElementById("pmHolder").value.trim(), a=document.getElementById("pmAcct").value.trim();
+        if(!h||a.replace(/\s+/g,"").length<6){ document.getElementById("pmErr").textContent="Enter the holder name and a valid account number."; return; }
+        window.korabiFetch("/api/account/payout-method",{method:"POST",body:JSON.stringify({holder:h,account:a})})
+          .then(function(r){return r.json().then(function(j2){ if(!r.ok) throw new Error(j2.message||"Could not save"); return j2; });})
+          .then(function(){ loadPayouts(); })
+          .catch(function(e){ document.getElementById("pmErr").textContent=e.message; });
+      });
+    });
+  }
+
+  load();
+  loadPayouts();
+})();
+</script>
+<div id="korabiFooter"></div>
+</body></html>

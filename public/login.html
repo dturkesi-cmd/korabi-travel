@@ -1,0 +1,84 @@
+<!doctype html><html lang="en"><head>
+<meta charset="utf-8"/><meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>Sign in — Korabi Travel</title>
+<meta name="description" content="Sign in or create a free Korabi account to earn Korabi Cash and manage your trips."/>
+<meta name="theme-color" content="#FFF7EE"/>
+<link rel="icon" href="/assets/korabi-mark.svg">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,700;12..96,800&family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/assets/theme.css">
+<style>
+.box{max-width:420px;width:100%;padding:36px;}
+.box h1{font-size:1.85rem;margin-bottom:6px;}
+.tabs{display:flex;gap:8px;margin:22px 0;}
+.tabs button{padding:8px 16px;border-radius:999px;border:1.5px solid var(--line);font-weight:600;color:var(--ink-soft);background:transparent;}
+.tabs button.on{background:var(--ink);color:var(--paper);border-color:var(--ink);}
+.perks{margin-top:20px;padding-top:18px;border-top:1px solid var(--line);font-size:.84rem;color:var(--ink-soft);}
+.perks li{margin-bottom:6px;list-style:none;padding-left:18px;position:relative;}
+.perks li::before{content:"✓";position:absolute;left:0;color:var(--teal-deep);font-weight:700;}
+</style>
+</head><body>
+<header class="nav"><div class="wrap nav-inner"><a class="brand" href="/"><img class="mark" src="/assets/korabi-mark.svg" alt=""> korabi</a>
+<div class="nav-right"><a href="/" class="muted" style="font-size:.92rem;">Search flights</a><a href="/marketplace" class="muted" style="font-size:.92rem;">Marketplace</a><span class="auth-slot" id="authSlot"></span></div></div></header>
+<main class="login-page">
+  <div class="card box reveal">
+    <img class="brand-mark" src="/assets/korabi-mark.svg" alt="">
+    <h1 id="title">Welcome back</h1>
+    <p class="muted" id="sub">Sign in to earn Korabi Cash and manage your trips.</p>
+    <div class="tabs">
+      <button type="button" id="tabLogin" class="on">Sign in</button>
+      <button type="button" id="tabReg">Create account</button>
+    </div>
+    <form id="form">
+      <div class="field" id="nameFld" style="display:none;"><label>Name</label><input id="name" placeholder="Sara Lopes"></div>
+      <div class="field"><label>Email</label><input id="email" type="email" placeholder="you@email.com" required autocomplete="email"></div>
+      <div class="field"><label>Password</label><input id="password" type="password" placeholder="6+ characters" required minlength="6" autocomplete="current-password"></div>
+      <div class="err" id="err"></div>
+      <button type="submit" class="btn btn-primary" style="width:100%;margin-top:8px;" id="submitBtn">Sign in</button>
+    </form>
+    <ul class="perks">
+      <li>Earn Korabi Cash on every booking</li>
+      <li>Member prices on select fares</li>
+      <li>Manage trips, cancellations &amp; marketplace listings</li>
+    </ul>
+    <p class="muted" style="font-size:.78rem;margin-top:14px;">Demo: demo@korabi.test / demo1234 · Admin: admin@korabi.test / changeme</p>
+  </div>
+</main>
+<script src="/assets/site.js"></script>
+<script src="/assets/auth.js"></script>
+<script>
+(function(){
+  var mode="login";
+  var params=new URLSearchParams(location.search);
+  if(params.get("register")) setMode("register");
+
+  fetch("/api/auth/me").then(function(r){ return r.ok ? r.json() : null; }).then(function(j){
+    if(j && j.user) location.href=params.get("next")||"/";
+  }).catch(function(){});
+
+  function setMode(m){
+    mode=m;
+    document.getElementById("tabLogin").classList.toggle("on",m==="login");
+    document.getElementById("tabReg").classList.toggle("on",m==="register");
+    document.getElementById("nameFld").style.display=m==="register"?"block":"none";
+    document.getElementById("title").textContent=m==="login"?"Welcome back":"Join Korabi";
+    document.getElementById("sub").textContent=m==="login"?"Sign in to earn Korabi Cash and manage your trips.":"Create a free account — start earning on your first trip.";
+    document.getElementById("submitBtn").textContent=m==="login"?"Sign in":"Create account";
+    document.getElementById("password").autocomplete=m==="login"?"current-password":"new-password";
+  }
+  document.getElementById("tabLogin").onclick=function(){setMode("login");};
+  document.getElementById("tabReg").onclick=function(){setMode("register");};
+  document.getElementById("form").addEventListener("submit",function(e){
+    e.preventDefault();
+    var body={email:document.getElementById("email").value.trim(),password:document.getElementById("password").value};
+    if(mode==="register") body.name=document.getElementById("name").value.trim();
+    var url=mode==="login"?"/api/auth/login":"/api/auth/register";
+    (window.korabiFetch||fetch)(url,{method:"POST",headers:{"Content-Type":"application/json"},credentials:"same-origin",body:JSON.stringify(body)})
+      .then(function(r){return r.json().then(function(j){if(!r.ok)throw new Error(j.message||"Failed");return j;});})
+      .then(function(){ location.href=params.get("next")||"/"; })
+      .catch(function(err){ document.getElementById("err").textContent=err.message; });
+  });
+})();
+</script>
+<div id="korabiFooter"></div>
+</body></html>

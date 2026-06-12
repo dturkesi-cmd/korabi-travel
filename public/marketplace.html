@@ -1,0 +1,183 @@
+<!doctype html><html lang="en"><head>
+<meta charset="utf-8"/><meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>Seat marketplace — Korabi Travel</title>
+<meta name="description" content="Buy and sell flight seats with escrow protection and verified airline name changes." />
+<link rel="icon" href="/assets/korabi-mark.svg">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,700;12..96,800&family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/assets/theme.css">
+<style>
+.filters{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:8px;align-items:end;}
+.filters input,.filters select{border:1px solid var(--line);border-radius:11px;padding:10px 12px;font-family:var(--body);background:var(--paper);}
+.hero-stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:12px;margin:24px 0;}
+.modal-bg{position:fixed;inset:0;background:rgba(42,32,24,.45);backdrop-filter:blur(3px);display:none;align-items:center;justify-content:center;z-index:60;padding:18px;}
+.modal-bg.open{display:flex;}
+.modal{background:var(--card);border-radius:20px;max-width:480px;width:100%;padding:26px;box-shadow:0 30px 60px -24px rgba(42,32,24,.35);}
+.how-strip{background:linear-gradient(100deg,#FFF1D6,#E7F6F2);border:1px solid var(--line);border-radius:16px;padding:18px 20px;margin-bottom:28px;font-size:.92rem;display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:16px;}
+.how-strip b{font-family:var(--display);display:block;margin-bottom:4px;}
+.listing-sk{grid-template-columns:1fr 100px;}
+</style>
+</head><body>
+<header class="nav"><div class="wrap nav-inner"><a class="brand" href="/"><img class="mark" src="/assets/korabi-mark.svg" alt=""> korabi</a>
+<div class="nav-right"><a href="/" class="muted">Search flights</a><a href="/account" class="muted">My trips</a><span class="auth-slot" id="authSlot"></span></div></div></header>
+
+<div class="page-hero"><div class="wrap">
+  <p class="eyebrow">Seat resale</p>
+  <h1>Marketplace</h1>
+  <p>Lawful resale on airlines that permit paid name changes — escrow-protected, verified by our ARC desk.</p>
+  <div class="hero-stats">
+    <div class="stat"><div class="n" id="statCount">—</div><div class="l">Seats available</div></div>
+    <div class="stat"><div class="n">Escrow</div><div class="l">Buyer funds held until transfer</div></div>
+    <div class="stat"><div class="n">ARC desk</div><div class="l">Official name change</div></div>
+  </div>
+</div></div>
+
+<main class="wrap" style="padding-bottom:60px;">
+  <div class="how-strip">
+    <div><b>1 · List</b>Seller posts a ticket on a transferable airline.</div>
+    <div><b>2 · Escrow</b>Buyer pays in — funds held, not released yet.</div>
+    <div><b>3 · Transfer</b>Desk re-issues the ticket to the new traveler.</div>
+  </div>
+
+  <p class="muted" style="font-size:.8rem;margin:-8px 0 10px;">Transferable carriers include Ryanair, easyJet, Wizz, Vueling, Frontier, Spirit, Volaris.</p>
+  <div class="airline-chips" id="airlineChips"></div>
+
+  <div class="filters">
+    <div><label class="muted" style="font-size:.75rem;">Origin</label><br><input id="fOrigin" placeholder="LIS" maxlength="3" style="width:70px;text-transform:uppercase;"></div>
+    <div><label class="muted" style="font-size:.75rem;">Destination</label><br><input id="fDest" placeholder="BCN" maxlength="3" style="width:70px;text-transform:uppercase;"></div>
+    <div><label class="muted" style="font-size:.75rem;">Sort</label><br>
+      <select id="fSort"><option value="soonest">Soonest departure</option><option value="cheapest">Cheapest</option><option value="newest">Newest</option></select>
+    </div>
+    <button class="btn btn-ink" id="fApply" style="padding:10px 18px;">Apply</button>
+    <button class="btn btn-primary" id="listBtn" style="padding:10px 18px;margin-left:auto;">List a seat</button>
+  </div>
+
+  <div id="list"><p class="muted">Loading listings…</p></div>
+</main>
+
+<div class="modal-bg" id="buyBg"><div class="modal">
+  <h3 style="font-size:1.2rem;">Buy this seat</h3>
+  <p class="muted" style="font-size:.9rem;">Enter the new traveler's name — our desk performs the airline name change.</p>
+  <div class="field"><label>Given name</label><input id="buyGiven"></div>
+  <div class="field"><label>Family name</label><input id="buyFamily"></div>
+  <div class="err" id="buyErr"></div>
+  <button class="btn btn-primary" id="buyConfirm" style="width:100%;">Pay into escrow</button>
+  <button class="btn btn-ghost" id="buyClose" style="width:100%;margin-top:8px;">Cancel</button>
+</div></div>
+
+<div class="modal-bg" id="listBg"><div class="modal">
+  <h3 style="font-size:1.2rem;">List your seat</h3>
+  <p class="muted" style="font-size:.88rem;margin-bottom:14px;">Only airlines that allow paid name changes can be listed.</p>
+  <div class="field"><label>Origin (IATA)</label><input id="lOrigin" maxlength="3" placeholder="LIS"></div>
+  <div class="field"><label>Destination (IATA)</label><input id="lDest" maxlength="3" placeholder="BCN"></div>
+  <div class="field"><label>Airline (FR, U2, W6…)</label><input id="lAirline" maxlength="2" placeholder="FR"></div>
+  <div class="field"><label>Departure</label><input id="lDep" type="datetime-local"></div>
+  <div class="field"><label>Asking price</label><input id="lPrice" type="number" placeholder="89"></div>
+  <div class="field"><label>PNR / booking ref</label><input id="lPnr" placeholder="ABC123"></div>
+  <div class="err" id="listErr"></div>
+  <button class="btn btn-primary" id="listConfirm" style="width:100%;">Publish listing</button>
+  <button class="btn btn-ghost" id="listClose" style="width:100%;margin-top:8px;">Cancel</button>
+</div></div>
+
+<script src="/assets/auth.js"></script>
+<script src="/assets/site.js"></script>
+<script>
+(function(){
+  var currentId=null;
+  function money(a,c){ try{return new Intl.NumberFormat(undefined,{style:"currency",currency:c||"USD",maximumFractionDigits:0}).format(Number(a));}catch(e){return (c||"$")+a;} }
+  function qs(){
+    var q=[];
+    var o=document.getElementById("fOrigin").value.trim(); if(o) q.push("origin="+encodeURIComponent(o.toUpperCase()));
+    var d=document.getElementById("fDest").value.trim(); if(d) q.push("destination="+encodeURIComponent(d.toUpperCase()));
+    q.push("sort="+document.getElementById("fSort").value);
+    return q.length?"?"+q.join("&"):"";
+  }
+  fetch("/api/marketplace/airlines").then(function(r){return r.json();}).then(function(j){
+    var box=document.getElementById("airlineChips");
+    box.innerHTML=(j.airlines||[]).map(function(a){ return '<span class="airline-chip">'+a.iata+' · '+a.name+'</span>'; }).join("");
+  }).catch(function(){});
+  function renderSkeletons(){
+    var box=document.getElementById("list");
+    var html="";
+    for(var i=0;i<3;i++){
+      html+='<div class="sk listing-sk"><div><div class="ln" style="width:42%"></div><div class="ln" style="width:68%"></div><div class="ln" style="width:52%"></div></div><div><div class="ln" style="width:80%"></div><div class="ln" style="width:60%"></div></div></div>';
+    }
+    box.innerHTML=html;
+  }
+  function renderError(){
+    document.getElementById("statCount").textContent="—";
+    document.getElementById("list").innerHTML=
+      '<div class="card state-panel"><div class="icon">⚠️</div><h3>Couldn\'t load listings</h3>'+
+      '<p>Check your connection and try again.</p>'+
+      '<button class="btn btn-primary" id="retryLoad">Try again</button></div>';
+    var rb=document.getElementById("retryLoad");
+    if(rb) rb.addEventListener("click",load);
+  }
+  function load(){
+    renderSkeletons();
+    fetch("/api/marketplace/listings"+qs()).then(function(r){
+      if(!r.ok) throw new Error("Could not load listings");
+      return r.json();
+    }).then(function(j){
+      var items=j.listings||[];
+      document.getElementById("statCount").textContent=items.length;
+      var box=document.getElementById("list");
+      if(!items.length){
+        box.innerHTML='<div class="card state-panel"><div class="icon">✈️</div><h3>No seats match your filters</h3>'+
+          '<p>Try clearing origin or destination, or be the first to list a seat on this route.</p>'+
+          '<button class="btn btn-primary" id="emptyListBtn">List a seat</button></div>';
+        var eb=document.getElementById("emptyListBtn"); if(eb) eb.onclick=function(){ document.getElementById("listBtn").click(); };
+        return;
+      }
+      box.innerHTML=items.map(function(l){
+        var verified=l.verification&&l.verification.state==="verified"?'<span class="tag ok">✓ Verified</span>':'<span class="tag warn">Pending verification</span>';
+        var save=l.fare_paid&&Number(l.fare_paid)>Number(l.asking_price)?Math.round((1-l.asking_price/l.fare_paid)*100):0;
+        return '<div class="card listing-card"><div><div class="route">'+l.origin+' → '+l.destination+'</div>'+
+          '<div class="meta">'+new Date(l.departing_at).toLocaleString(undefined,{weekday:"short",month:"short",day:"numeric",hour:"2-digit",minute:"2-digit"})+' · '+l.airline.name+'</div>'+
+          '<div style="margin-top:8px;">'+verified+(save?'<span class="tag ok" style="margin-left:6px;">'+save+'% below fare</span>':'')+'</div></div>'+
+          '<div><div class="price">'+money(l.asking_price,l.currency)+'</div>'+
+          '<button class="btn btn-primary buy-btn" data-id="'+l.id+'" style="padding:8px 16px;font-size:.85rem;margin-top:10px;">Buy seat</button></div></div>';
+      }).join("");
+      document.querySelectorAll(".buy-btn").forEach(function(b){
+        b.addEventListener("click",function(){
+          if(!window.korabiUser){ location.href="/login?next=/marketplace"; return; }
+          currentId=b.getAttribute("data-id");
+          document.getElementById("buyBg").classList.add("open");
+        });
+      });
+    }).catch(function(){ renderError(); });
+  }
+  document.getElementById("fApply").addEventListener("click",load);
+  document.getElementById("buyClose").addEventListener("click",function(){ document.getElementById("buyBg").classList.remove("open"); });
+  document.getElementById("buyConfirm").addEventListener("click",function(){
+    window.korabiFetch("/api/marketplace/listings/"+currentId+"/buy",{method:"POST",body:JSON.stringify({
+      passenger:{given_name:document.getElementById("buyGiven").value.trim(),family_name:document.getElementById("buyFamily").value.trim()}
+    })}).then(function(r){return r.json().then(function(j){if(!r.ok)throw new Error(j.message||"Purchase failed");return j;});})
+      .then(function(){ document.getElementById("buyBg").classList.remove("open"); load(); if(window.korabiToast) window.korabiToast("Purchase received — escrow held until transfer."); else alert("Purchase received — escrow held. The desk will complete the name change."); })
+      .catch(function(e){ document.getElementById("buyErr").textContent=e.message; });
+  });
+  document.getElementById("listBtn").addEventListener("click",function(){
+    if(!window.korabiUser){ location.href="/login?next=/marketplace"; return; }
+    document.getElementById("listBg").classList.add("open");
+  });
+  document.getElementById("listClose").addEventListener("click",function(){ document.getElementById("listBg").classList.remove("open"); });
+  document.getElementById("listConfirm").addEventListener("click",function(){
+    var dep=document.getElementById("lDep").value;
+    window.korabiFetch("/api/marketplace/listings",{method:"POST",body:JSON.stringify({
+      origin:document.getElementById("lOrigin").value.trim(),
+      destination:document.getElementById("lDest").value.trim(),
+      airline_iata:document.getElementById("lAirline").value.trim(),
+      departing_at: dep?new Date(dep).toISOString():null,
+      asking_price:Number(document.getElementById("lPrice").value),
+      fare_paid:Number(document.getElementById("lPrice").value)*1.4,
+      currency:"USD",
+      pnr:document.getElementById("lPnr").value.trim()
+    })}).then(function(r){return r.json().then(function(j){if(!r.ok)throw new Error(j.message||"Could not list");return j;});})
+      .then(function(){ document.getElementById("listBg").classList.remove("open"); load(); if(window.korabiToast) window.korabiToast("Listing published — verification pending."); })
+      .catch(function(e){ document.getElementById("listErr").textContent=e.message; });
+  });
+  load();
+})();
+</script>
+<div id="korabiFooter"></div>
+</body></html>
